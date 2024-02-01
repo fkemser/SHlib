@@ -219,6 +219,8 @@ lib_net_dns_resolve() {
   local arg_time="${3:-2}"
   local arg_tries="${4:-2}"
 
+  lib_core_is --cmd "dig" || return
+  
   if lib_core_regex --fqdn "${arg_resolve}"; then
     __lib_net_dns_resolve \
       --fqdn "${arg_ipv}" "${arg_resolve}" "${arg_time}" "${arg_tries}"

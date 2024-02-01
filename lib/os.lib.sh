@@ -55,11 +55,14 @@ done
 #  Current init system
 readonly LIB_OS_INIT_SYSTEMD="systemd"
 readonly LIB_OS_INIT_SYSVINIT="init"
-readonly LIB_OS_INIT="$(ps -p 1 -o comm=)"
+readonly LIB_OS_INIT="$(ps -eo pid=,comm= | sed -ne "s/^[[:space:]]*1[[:space:]]\{1,\}\([^[:space:]]\{1,\}\)[[:space:]]*$/\1/ p")"
 
 #  Only used within <lib_os_ps_pidlock()>
 LIB_OS_PS_PIDLOCK_FILE="/var/run/$(basename "$0").pid" # PID file
 LIB_OS_PS_PIDLOCK_LOCKED="false" # PID file created by <lib_os_ps_pidlock()>?
+
+#  Get procfs path if available
+LIB_OS_DIR_PROCFS="$(mount -t proc 2>/dev/null | sed -ne "s/^.*\(\/[^[:space:]]\{1,\}\).*$/\1/ p")"
 
 #===============================================================================
 #  FUNCTIONS
@@ -265,8 +268,9 @@ __lib_os_cpu_get() {
 lib_os_cpu_has_feature() {
   local arg_flag="$1"
 
-  lib_core_is --file "/proc/cpuinfo"  && \
-  lib_core_is --set "${arg_flag}"     || \
+  [ -n "${LIB_OS_DIR_PROCFS}" ]                       && \
+  lib_core_is --file "${LIB_OS_DIR_PROCFS}/cpuinfo"   && \
+  lib_core_is --set "${arg_flag}"                     || \
   return
 
   __lib_os_cpu_has_feature "$@"
@@ -277,7 +281,7 @@ __lib_os_cpu_has_feature() {
 
   local num="$(\
     grep -E "^(Features|flags)\s*:\s*(\S+\s+)*${arg_flag}(\s+\S+)*\s*$" \
-    /proc/cpuinfo | wc -l                                               \
+      "${LIB_OS_DIR_PROCFS}/cpuinfo" | wc -l                            \
   )"
 
   [ ${num} -ge 1 ] && \
@@ -605,8 +609,9 @@ lib_os_dev_class_list() {
 #         1...:  Device(s) to check
 #===============================================================================
 #lib_os_dev_is_mounted() {
-  #lib_core_is --blockdevice "$@"    && \
-  #lib_core_is --file "/proc/mounts" || \
+  #lib_core_is --blockdevice "$@"                   && \
+  #[ -n "${LIB_OS_DIR_PROCFS}" ]                    && \
+  #lib_core_is --file "${LIB_OS_DIR_PROCFS}/mounts" || \
   #return
 
   #__lib_os_dev_is_mounted "$@"
@@ -615,7 +620,7 @@ lib_os_dev_class_list() {
 #__lib_os_dev_is_mounted() {
   #local dev
   #for dev in "$@"; do
-    #grep -qs "${dev} " "/proc/mounts" || return
+    #grep -qs "${dev} " "${LIB_OS_DIR_PROCFS}/mounts" || return
   #done
 #}
 
@@ -716,11 +721,11 @@ __lib_os_dev_umount() {
 #                (Default: 'false')
 #            3:  (Optional) Show header line and dependencies (└─) (true|false)
 #                (Default: 'false')
-#         4...:  Device(s) to check - has to be an absolute path, e.g.
-#                '/dev/sda', '/dev/disk/by-id/...',
-#                '/dev/sda1','/dev/disk/by-uuid/...', ...
-#      OUTPUTS:  Absolute number(s) to <stdout> (separated by newline)
-#                (empty line if parameter is not a number)
+#         4...:  (Optional) Particular device(s) to check - has to be an
+#                absolute path, e.g.
+#                  '/dev/sda', '/dev/disk/by-id/...',
+#                  '/dev/sda1','/dev/disk/by-uuid/...', ...
+#      OUTPUTS:  'lsblk' information to <stdout>
 #===============================================================================
 lib_os_dev_lsblk() {
   local arg_columns="$1"
@@ -863,7 +868,9 @@ __lib_os_lib() {
 #      OUTPUTS:  Memory statistics to <stdout>
 #===============================================================================
 lib_os_proc_meminfo() {
-  lib_core_is --file "/proc/meminfo" || return
+  [ -n "${LIB_OS_DIR_PROCFS}" ]                       && \
+  lib_core_is --file "${LIB_OS_DIR_PROCFS}/meminfo"   || \
+  return
 
   local arg_select="$1"
   local arg_unit="${2:-B}"
@@ -942,7 +949,7 @@ __lib_os_proc_meminfo() {
   local res
   local res_val
   local res_unit
-  res="$(cat /proc/meminfo | grep -e "^${field}:" | tr -s " ")"
+  res="$(cat "${LIB_OS_DIR_PROCFS}/meminfo" | grep -e "^${field}:" | tr -s " ")"
 
   if lib_core_is --set "${res}"; then
     res_val="$(printf "%s" "${res}" | cut -d " " -f2)"
@@ -984,46 +991,98 @@ __lib_os_ps_exists() {
 #===  FUNCTION  ================================================================
 #         NAME:  lib_os_ps_get_descendants
 #  DESCRIPTION:  Look for sub-processes
-#       SOURCE:  Adapted from: https://unix.stackexchange.com/a/124148
-# PARAMETER  1:  Process ID (PID) of root process
-#            2:  Recursively look for sub-processes
+# PARAMETER  1:  Variable (name) where list of PIDs will be stored
+#                (must not be 'pid', 'result', 'sub', 'subsub', or 'tid')
+#            2:  Process ID (PID) of root process
+#            3:  Recursively look for sub-sub-...-processes?
 #                (true|false) (default: 'true')
-#      OUTPUTS:  PID(s) of sub-process(es) (separated by <newline>) to <stdout>
+#      OUTPUTS:  Stores PID(s) of sub-process(es) (separated by space) in the
+#                variable defined in param <1>
 #===============================================================================
 lib_os_ps_get_descendants() {
-  local arg_pid="$1"
-  local arg_recursive="${2:-true}"
+  local arg_varname="$1"
+  local arg_pid="$2"
+  local arg_recursive="${3:-true}"
 
-  lib_core_is --int-pos "${arg_pid}" && \
-  lib_core_is --bool "${arg_recursive}" || \
-  return
+  case "${arg_varname}" in
+    pid|result|sub|subsub|tid) false ;;
+    *) lib_core_is --varname "${arg_varname}" ;;
+  esac                                            && \
+  lib_os_ps_exists "${arg_pid}"                   && \
+  lib_core_is --bool    "${arg_recursive}"        && \
 
-  __lib_os_ps_get_descendants "$@"
+  if [ -n "${LIB_OS_DIR_PROCFS}" ]; then
+    __lib_os_ps_get_descendants_procfs "$@"
+  else
+    __lib_os_ps_get_descendants_ps "$@"
+  fi
 }
 
-__lib_os_ps_get_descendants() {
-  local arg_pid="$1"
-  local arg_recursive="${2:-true}"
+__lib_os_ps_get_descendants_procfs() {
+  local arg_varname="$1"
+  local arg_pid="$2"
+  local arg_recursive="${3:-true}"
 
-  local children
-  local ownpid
-  lib_os_ps_get_ownpid ownpid
-  children="$(ps -o pid= --ppid "$1" | sed -e "s/^[[:space:]]\{1,\}//")"
+  local pid       # PID loop variable
+  local sub       # PIDs of each task's sub-processes
+                  # (content of '/proc/<pid>/task/<tid>/children')
+  local subsub    # PIDs of sub-sub-...-processes (recursive lookup)
+  local tid       # Loop variable directing at the process's threads
+                  # (/proc/<pid>/task/<tid>)
+  local result    # PID return list containing all sub-processes and
+                  # (optionally) sub-sub-...-processes
 
-  # In case
-  #   - <$1> is the PID of the (parent) shell, and
-  #   - this functions is called in a subshell (command substitution)
-  # then the pattern matching avoids that this subshell occurs in the output.
-  children="${children%"${ownpid}"}"
+  # Look for threads (thread ids) related to the given process
+  # (/proc/<pid>/task/<tid>)
+  for tid in "${LIB_OS_DIR_PROCFS}"/${arg_pid}/task/*; do
+    [ -f "${tid}/children" ] || continue
+
+    # Get sub-processes (/proc/<pid>/task/<tid>/children)
+    sub="$(cat "${tid}/children")"
+
+    # Optionally do a recursive lookup (sub-sub-...-processes)
+    if ${arg_recursive}; then
+      for pid in ${sub}; do
+        __lib_os_ps_get_descendants_procfs subsub "${pid}"
+        result="${result}${result:+ }${subsub}${subsub:+ }${pid}"
+      done
+    else
+      result="${result}${result:+ }${sub}"
+    fi
+  done
+
+  # Store temporary list (<result>) in user-defined variable (<arg_varname>)
+  eval "${arg_varname}=\${result}"
+}
+
+__lib_os_ps_get_descendants_ps() {
+  local arg_varname="$1"
+  local arg_pid="$2"
+  local arg_recursive="${3:-true}"
+
+  local pid       # PID loop variable
+  local sub       # PIDs of each task's sub-processes
+  local subsub    # PIDs of sub-sub-...-processes (recursive lookup)
+  local result    # PID return list containing all sub-processes and
+                  # (optionally) sub-sub-...-processes
+
+  # Get sub-processes
+  sub="$(ps -eo ppid=,pid= | sed -ne "s/^[[:space:]]*${arg_pid}[[:space:]]\{1,\}\([^[:space:]]\{1,\}\)[[:space:]]*$/\1/ p" | xargs)"
 
   # Optionally do a recursive lookup (sub-sub-...-processes)
   if ${arg_recursive}; then
-    local pid
-    for pid in ${children}; do __lib_os_ps_get_descendants "${pid}"; done
+    for pid in ${sub}; do
+      __lib_os_ps_get_descendants_ps subsub "${pid}"
+      result="${result}${result:+ }${subsub}${subsub:+ }${pid}"
+    done
+  else
+    result="${sub}"
   fi
 
-  if [ -n "${children}" ]; then printf "%s\n" "${children}"; fi
+  # Store temporary list (<result>) in user-defined variable (<arg_varname>)
+  eval "${arg_varname}=\${result}"
 }
+
 
 #===  FUNCTION  ================================================================
 #         NAME:  lib_os_ps_get_mem
@@ -1038,8 +1097,9 @@ lib_os_ps_get_mem() {
   local arg_pid="$1"
   local arg_unit="${2:-B}"
 
-  lib_core_is --cmd "getconf"               && \
-  lib_core_is --file "/proc/${arg_pid}/statm" || \
+  lib_core_is --cmd "getconf"                                 && \
+  [ -n "${LIB_OS_DIR_PROCFS}" ]                               && \
+  lib_core_is --file "${LIB_OS_DIR_PROCFS}/${arg_pid}/statm"  || \
   return
 
   __lib_os_ps_get_mem "$@"
@@ -1053,12 +1113,12 @@ __lib_os_ps_get_mem() {
   local mem_bytes       # Memory usage in bytes
   local pagesize_bytes  # Size of a page in bytes
 
-  # Get page size as "/proc/.../statm" output is always in pages
+  # Get page size as "/proc/<pid>/statm" output is always in pages
   pagesize_bytes="$(getconf PAGESIZE)"
 
-  mem_pages="$(cut -d" " -f2 < /proc/${arg_pid}/statm)"
+  mem_pages="$(cut -d" " -f2 < "${LIB_OS_DIR_PROCFS}/${arg_pid}/statm")"
   mem_bytes="$(( mem_pages * pagesize_bytes ))"
-  lib_core_convert_unit "${mem_bytes}" "B" "${arg_unit}"
+  lib_math_convert_unit "${mem_bytes}" "B" "${arg_unit}"
 }
 
 #===  FUNCTION  ================================================================
@@ -1072,8 +1132,8 @@ lib_os_ps_get_ownpid() {
   local p
 
   case "${arg_varname}" in
-    ""|p) return 1;;
-    *) ;;
+    p) return 1;;
+    *) lib_core_is --varname "${arg_varname}" || return;;
   esac
 
   p="$(exec sh -c 'echo "$PPID"')" && \
@@ -1116,8 +1176,8 @@ lib_os_ps_kill_by_name() {
   local arg_procname="$1"
   local arg_signal="${2:-15}"
 
-  lib_core_is --set "${arg_procname}"  && \
-  lib_core_is --signal "${arg_signal}"      || \
+  lib_core_is --set "${arg_procname}"   && \
+  lib_core_is --signal "${arg_signal}"  || \
   return
 
   __lib_os_ps_kill_by_name "$@"
@@ -1179,7 +1239,7 @@ __lib_os_ps_kill_by_pid() {
       #------------------------------------------------------------------------
       #  For each parent PID: first add sub PIDs to the list, then the parent
       #------------------------------------------------------------------------
-      children_pids="$(lib_os_ps_get_descendants "${pid}" | xargs)"
+      lib_os_ps_get_descendants children_pids "${pid}"
       kill_pids="${kill_pids:+${kill_pids} }${children_pids:+${children_pids} }${pid}"
     done
   else

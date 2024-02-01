@@ -162,18 +162,19 @@ The project has been developed and tested on the following system:
 
 | Info | Description
 ---: | ---
-OS | Raspbian GNU/Linux 11 (bullseye)
-Kernel | 5.15.61-v7l+
-Packages | [bc (1.07.1-2 and others)](https://packages.debian.org/bullseye/bc)
-|| [coreutils (8.32-4 und andere)](https://packages.debian.org/bullseye/coreutils)
-|| [dash (0.5.11+git20200708+dd9ef66-5)](https://packages.debian.org/bullseye/dash)
-|| [dialog (1.3-20201126-1)](https://packages.debian.org/bullseye/dialog)
-|| [iproute2 (5.10.0-4)](https://packages.debian.org/bullseye/iproute2)
-|| [libc-bin (2.31-13+deb11u6)](https://packages.debian.org/bullseye/libc-bin)
-|| [netcat (1.10-46)](https://packages.debian.org/bullseye/netcat)
-|| [network-manager (1.30.6-1+deb11u1)](https://packages.debian.org/bullseye/network-manager)
-|| [sudo (1.9.5p2-3+deb11u1)](https://packages.debian.org/bullseye/sudo)
-|| [udev (247.3-7+deb11u2)](https://packages.debian.org/bullseye/udev)
+OS | Debian GNU/Linux 12 (bookworm)
+Kernel | 5.15.133.1-microsoft-standard-WSL2
+Packages | [bc (1.07.1-3+b1)](https://packages.debian.org/bookworm/bc)
+|| [bind9-dnsutils (1:9.18.19-1~deb12u1)](https://packages.debian.org/bookworm/bind9-dnsutils)
+|| [coreutils (9.1-1)](https://packages.debian.org/bookworm/coreutils)
+|| [dash (0.5.12-2)](https://packages.debian.org/bookworm/dash)
+|| [dialog (1.3-20230209-1)](https://packages.debian.org/bookworm/dialog)
+|| [iproute2 (6.1.0-3)](https://packages.debian.org/bookworm/iproute2)
+|| [libc-bin (2.36-9+deb12u3)](https://packages.debian.org/bookworm/libc-bin)
+|| [netcat (1.10-46)](https://packages.debian.org/bookworm/netcat)
+|| [network-manager (1.42.4-1)](https://packages.debian.org/bookworm/network-manager)
+|| [sudo (1.9.13p3-1+deb12u1)](https://packages.debian.org/bookworm/sudo)
+|| [udev (252.19-1~deb12u1)](https://packages.debian.org/bookworm/udev)
 
 > :information_source: Most of the packages are optional and only needed for certain library functions.
 
@@ -189,12 +190,17 @@ Please make sure that the following dependencies are installed:
 * POSIX-/Bourne-compliant shell
 * Additional packages (only needed for certain functions, see [Testing Environment](#testing-environment))
 
-Below you can find distribution-specifc installation instructions (only needed for additional packages).
+Below you can find distribution-specific installation instructions (only needed for additional packages).
+
+### Alpine Linux
+```sh
+apk add bc bind-tools coreutils dialog iproute2 netcat-openbsd networkmanager-cli sudo
+```
 
 ### Debian
 
 ```sh
-sudo apt install bc coreutils dash dialog iproute2 libc-bin netcat network-manager sudo udev
+apt install bc bind9-dnsutils coreutils dash dialog iproute2 libc-bin netcat network-manager sudo udev
 ```
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>

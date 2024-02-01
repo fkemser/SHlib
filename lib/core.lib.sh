@@ -395,7 +395,7 @@ lib_core_expand_tilde() {
 
 #===  FUNCTION  ================================================================
 #         NAME:  lib_core_file_get
-#  DESCRIPTION:  Get file information#
+#  DESCRIPTION:  Get file information
 # PARAMETER  1:  Information selector, see 'case' statement below
 #            2:  File
 #      OUTPUTS:  File information to <stdout>
