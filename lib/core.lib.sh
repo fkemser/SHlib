@@ -413,8 +413,9 @@ lib_core_file_get() {
   local arg_select="$1"
   local arg_file="$(lib_core_expand_tilde "$2")"
 
-  # Check if it can be a valid filepath
-  touch -c "${arg_file}" 2>/dev/null && \
+  # TODO: Temporarily disabled as this can fail on read-only filesystems
+  # # Check if it can be a valid filepath
+  # touch -c "${arg_file}" 2>/dev/null && \
   __lib_core_file_get "$@"
 }
 
