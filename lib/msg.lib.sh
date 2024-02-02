@@ -1161,5 +1161,11 @@ lib_msg_term_get() {
     return 1
   fi
 
+  # TODO: Temporarily decreased by one as in some cases the size
+  #       may not be correct, e.g. when piping to 'less' under Alpine Linux v3.17
+  case "${arg_select}" in
+    --cols) [ -n "${result}" ] && result="$(( result - 1 ))" ;;
+  esac
+
   [ -n "${result}" ] && printf "%s\n" "${result}"
 }
