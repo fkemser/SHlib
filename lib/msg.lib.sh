@@ -330,7 +330,7 @@ lib_msg_log() {
 #===============================================================================
 #===  FUNCTION  ================================================================
 #         NAME:  lib_msg_print_borderstring
-#  DESCRIPTION:  Print a string sorrounded by border characters
+#  DESCRIPTION:  Print a string surrounded by border characters
 #      OUTPUTS:  Writes formatted string to <stdout>
 # PARAMETER  1:  String to format (optional)
 #            2:  (Single) border character (optional, default '-')
@@ -338,16 +338,6 @@ lib_msg_log() {
 #            4:  Line width (optional, default is the terminal's window width)
 #===============================================================================
 lib_msg_print_borderstring() {
-  #-----------------------------------------------------------------------------
-  #  Split multiline string if necessary (recursive call)
-  #-----------------------------------------------------------------------------
-  if lib_core_str_is_multiline "$1"; then
-    printf "$1" | while IFS= read -r line || [ -n "${line}" ]; do
-      lib_msg_print_borderstring "${line}" "$2" "$3" "$4"
-    done
-    return
-  fi
-
   #-----------------------------------------------------------------------------
   #  Read arguments
   #-----------------------------------------------------------------------------
@@ -363,16 +353,29 @@ lib_msg_print_borderstring() {
   local string_len_max  # Maximum string length per line
 
   #-----------------------------------------------------------------------------
-  #  Get string length and line width
+  #  Determine line width
   #-----------------------------------------------------------------------------
-  string_len="$(lib_core_str_get_length "${arg_string}")"
-
   # Set a dummy terminal in case the script is run in batchmode via SSH
   # Otherwise the following error occurs:
   # "tput: No value for $TERM and no -T specified"
   [ -z "${TERM}" ] && export TERM="dumb"
 
   arg_width="${arg_width:-$(lib_msg_term_get --cols)}"
+
+  #-----------------------------------------------------------------------------
+  #  Split multiline string if necessary (recursive call)
+  #-----------------------------------------------------------------------------
+  if lib_core_str_is_multiline "${arg_string}"; then
+    printf "${arg_string}" | while IFS= read -r line || [ -n "${line}" ]; do
+      lib_msg_print_borderstring "${line}" "${arg_border}" "${arg_padding}" "${arg_width}"
+    done
+    return
+  fi
+
+  #-----------------------------------------------------------------------------
+  #  Get string length
+  #-----------------------------------------------------------------------------
+  string_len="$(lib_core_str_get_length "${arg_string}")"
 
   #-----------------------------------------------------------------------------
   #  In case of an empty string do not set any padding
@@ -391,9 +394,9 @@ lib_msg_print_borderstring() {
   #-----------------------------------------------------------------------------
   #  Minimum line width: 2 border char (l+r) + 2x padding (l+r) + (1 char)
   #-----------------------------------------------------------------------------
-  [ ${#arg_border} -eq 1 ]                                                && \
-  [ ${arg_padding} -ge 0 ] 2>/dev/null                                    && \
-  [ "${arg_width}" -ge "$(( 2 + (arg_padding * 2) + add ))" ] 2>/dev/null || \
+  [ ${#arg_border} -eq 1 ]                                                  && \
+  [ ${arg_padding} -ge 0 ] 2>/dev/null                                      && \
+  [ ${arg_width} -ge $(( 2 + (arg_padding * 2) + add )) ] 2>/dev/null       || \
   return 1
 
   #-----------------------------------------------------------------------------
@@ -611,19 +614,19 @@ lib_msg_print_heading() {
   #-----------------------------------------------------------------------------
   if [ -n "${top_bottom_line}" ]; then
     lib_msg_print_borderstring "" "${char_border}" "" "${arg_width}"
-  fi                                                                      && \
+  fi                                                                        && \
 
-  lib_msg_print_borderstring                                                  \
-    "${arg_string}" "${char_border}" "${padding_string}" "${arg_width}"   && \
+  lib_msg_print_borderstring                                                \
+    "${arg_string}" "${char_border}" "${padding_string}" "${arg_width}"     && \
 
   if [ -n "${top_bottom_line}" ]; then
     lib_msg_print_borderstring "" "${char_border}" "" "${arg_width}"
-  fi                                                                      && \
+  fi                                                                        && \
 
   #-----------------------------------------------------------------------------
   #  Bottom padding
   #-----------------------------------------------------------------------------
-  i=1                                                                     && \
+  i=1                                                                       && \
   while [ $i -le ${padding_bottom} ]; do
     printf "\n"
     i="$(( i + 1))"
@@ -830,7 +833,7 @@ lib_msg_print_propvalue()  {
     local arg_width_min
     arg_width_min="$(( arg_width + ( WIDTH_MIN - width_max ) ))"
     lib_msg_echo --error \
-      "Terminal's (or indiviually set) width is too small, minimum is <${arg_width_min}>."
+      "Terminal's (or individually set) width is too small, minimum is <${arg_width_min}>."
     return 1
   }
 
