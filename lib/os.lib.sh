@@ -811,50 +811,55 @@ lib_os_is_subshell() {
 # PARAMETER  1:  -d|--dir     Directory path
 #                -e|--exists  Do not return any path, just check for existence
 #                -f|--file    Full filepath
-#            2:  Library file, e.g. 'opensc-pkcs11.so'
-#      OUTPUTS:  Writes library path to <stdout> (if library exists)
+#         2...:  Library file(s), e.g. 'opensc-pkcs11.so'
+#      OUTPUTS:  Writes library path(s) separated by <newline> to <stdout>
+#                (if library exists)
 #                or an error message to <stderr> (if library is missing)
-#   RETURNS  0:  Library exists
-#            1:  Library not found
+#   RETURNS  0:  All libraries exist
+#            1:  At least one library was not found
 #===============================================================================
 lib_os_lib() {
   local arg_type="${1:---file}"
-  local arg_lib="$2"
 
+  [ $# -ge 2 ]                        && \
   lib_core_is --cmd "ldconfig"        && \
   case "${arg_type}" in
     -d|--dir|-e|--exists|-f|--file) ;;
     *) false ;;
   esac                                && \
-  lib_core_is --set "${arg_lib}" && \
 
   __lib_os_lib "$@"
 }
 
 __lib_os_lib() {
-  local arg_type="${1:---file}"
-  local arg_lib="$2"
+  local arg_type="${1:---file}"; shift
 
+  local exitcode="0"
   local result
-  result="$(ldconfig -p | sed -ne                                     \
-    "s/^[[:space:]]*${arg_lib}[[:space:]]\{1,\}.\{1,\}=>[[:space:]]*\(.*\)$/\1/p" \
-  )"
+  local var
+  for var in "$@"; do
+    result="$(ldconfig -p | sed -ne                                             \
+      "s/^[[:space:]]*${var}[[:space:]]\{1,\}.\{1,\}=>[[:space:]]*\(.*\)$/\1/p" \
+    )"
 
-  # ldconfig only certain file name patterns, see 'man ldconfig'
-  if lib_core_is --empty "${result}"; then
-    result="$(find "/lib/" -name "${arg_lib}" | head -1)"
-  fi
+    # ldconfig only supports certain file name patterns, see 'man ldconfig'
+    if lib_core_is --empty "${result}"; then
+      result="$(find "/lib/" -name "${var}" | head -1)"
+    fi
 
-  lib_core_is --set "${result}"                                             && \
+    lib_core_is --set "${result}"                                             && \
 
-  case "${arg_type}" in
-    -d|--dir) __lib_core_file_get --dir "${result}";;
-    -f|--file) printf "%s" "${result}";;
-  esac                                                                      || \
+    case "${arg_type}" in
+      -d|--dir) __lib_core_file_get --dir "${result}";;
+      -f|--file) printf "%s\n" "${result}";;
+    esac                                                                      || \
 
-  { lib_core_msg --error "Library <${arg_lib}> not found."
-    return 1
-  }
+    { lib_core_msg --error "Library <${var}> not found."
+      exitcode="1"
+    }
+  done
+
+  return ${exitcode}
 }
 
 #===  FUNCTION  ================================================================

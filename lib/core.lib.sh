@@ -448,24 +448,24 @@ __lib_core_file_get() {
 #            2:  At least one file already exists
 #===============================================================================
 lib_core_file_touch() {
-  local return="0"
+  local exitcode="0"
 
   local file
   for file in "$@"; do
     file="$(lib_core_expand_tilde "${file}")"
 
     if lib_core_is --file "${file}"; then
-      return="2"
+      exitcode="2"
     else
       if mkdir --parents "$(dirname -- "${file}")" 2>/dev/null; then
         touch "${file}"
       else
-        return="1"
+        exitcode="1"
       fi
     fi
   done
 
-  return "${return}"
+  return "${exitcode}"
 }
 
 #===  FUNCTION  ================================================================
