@@ -503,9 +503,9 @@ lib_net_ifconfig_parse_stats() {
   local arg_select
   local arg_string
   case "$#" in
-    0) return 1;;
-    1) arg_select="$1"; arg_string="$(xargs)";;
-    *) arg_select="$1"; shift; arg_string="$*";;
+    0) return 1 ;;
+    1) arg_select="$1"; arg_string="$(xargs)" ;;
+    *) arg_select="$1"; shift; arg_string="$*" ;;
   esac
 
   local rx_tx_bytes="$(                                           \

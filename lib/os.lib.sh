@@ -253,9 +253,9 @@ __lib_os_cpu_get() {
   local arg_select="$1"
 
   case "${arg_select}" in
-    --cores|--cores-available) nproc;;
-    --cores-installed|--cores-total) nproc --all;;
-    *) return 1;;
+    --cores|--cores-available) nproc ;;
+    --cores-installed|--cores-total) nproc --all ;;
+    *) return 1 ;;
   esac
 }
 
@@ -339,10 +339,10 @@ lib_os_dev_bus_usb_list_by_busdev() {
   local busdev
   for busdev in "$@"; do
     case "${busdev}" in
-      */*/*) continue;;
-      ???/???) busnum="${busdev%/*}"; devnum="${busdev#*/}";;
-      ???|???/) busnum="${busdev%/*}"; devnum="";;
-      *) continue;;
+      */*/*) continue ;;
+      ???/???) busnum="${busdev%/*}"; devnum="${busdev#*/}" ;;
+      ???|???/) busnum="${busdev%/*}"; devnum="" ;;
+      *) continue ;;
     esac
     regex="${regex}${busnum}\/${devnum}\|"
   done
@@ -379,10 +379,10 @@ lib_os_dev_bus_usb_list_by_vidpid() {
   local vidpid
   for vidpid in "$@"; do
     case "${vidpid}" in
-      *:*:*) continue;;
-      ????:????) vid="${vidpid%:*}"; pid="${vidpid#*:}";;
-      ????|????:) vid="${vidpid%:*}"; pid="";;
-      *) continue;;
+      *:*:*) continue ;;
+      ????:????) vid="${vidpid%:*}"; pid="${vidpid#*:}" ;;
+      ????|????:) vid="${vidpid%:*}"; pid="" ;;
+      *) continue ;;
     esac
 
     vid="$(lib_core_str_remove_leading "0" "${vid}")"
@@ -523,7 +523,7 @@ __lib_os_dev_list_by_dev_udevadm() {
       syspath="${sysdev%/dev}"
       devname="$(udevadm info -q name -p ${syspath})"
       #case "${devname}" in
-        #"bus/"*) exit;;
+        #"bus/"*) exit ;;
       #esac
       eval "$(udevadm info -q property --export -p "${syspath}")"
       [ -z "${ID_SERIAL}" ] && exit
@@ -580,10 +580,10 @@ lib_os_dev_class_list() {
 
   local id_property
   case "${arg_class}" in
-    ${ARG_CLASS_HIDRAW}) id_property="HID_NAME";;
-    ${ARG_CLASS_INPUT}) id_property="NAME";;
-    ${ARG_CLASS_TPMRM}) id_property="MODALIAS";;
-    *) return 1;;
+    ${ARG_CLASS_HIDRAW}) id_property="HID_NAME" ;;
+    ${ARG_CLASS_INPUT}) id_property="NAME" ;;
+    ${ARG_CLASS_TPMRM}) id_property="MODALIAS" ;;
+    *) return 1 ;;
   esac
 
   local syspath
@@ -850,8 +850,8 @@ __lib_os_lib() {
     lib_core_is --set "${result}"                                             && \
 
     case "${arg_type}" in
-      -d|--dir) __lib_core_file_get --dir "${result}";;
-      -f|--file) printf "%s\n" "${result}";;
+      -d|--dir) __lib_core_file_get --dir "${result}" ;;
+      -f|--file) printf "%s\n" "${result}" ;;
     esac                                                                      || \
 
     { lib_core_msg --error "Library <${var}> not found."
@@ -892,63 +892,63 @@ __lib_os_proc_meminfo() {
 
   local field
   case "${arg_select}" in
-    --total|MemTotal) field="MemTotal";;
-    --free|MemFree) field="MemFree";;
-    --available|MemAvailable) field="MemAvailable";;
-    --buffers|Buffers) field="Buffers";;
-    --cached|Cached) field="Cached";;
-    --swap-cached|SwapCached) field="SwapCached";;
-    --active|Active) field="Active";;
-    --inactive|Inactive) field="Inactive";;
-    --active-anon|"Active(anon)") field="Active(anon)";;
-    --inactive-anon|"Inactive(anon)") field="Inactive(anon)";;
-    --active-file|"Active(file)") field="Active(file)";;
-    --inactive-file|"Inactive(file)") field="Inactive(file)";;
-    --unevictable|"Unevictable") field="Unevictable";;
-    --mlocked|Mlocked) field="Mlocked";;
-    --high-total|HighTotal) field="HighTotal";;
-    --high-free|HighFree) field="HighFree";;
-    --low-total|LowTotal) field="LowTotal";;
-    --low-free|LowFree) field="LowFree";;
-    --swap-total|SwapTotal) field="SwapTotal";;
-    --swap-free|SwapFree) field="SwapFree";;
-    --dirty|Dirty) field="Dirty";;
-    --writeback|Writeback) field="Writeback";;
-    --anon-pages|AnonPages) field="AnonPages";;
-    --mapped|Mapped) field="Mapped";;
-    --shmem|Shmem) field="Shmem";;
-    --k-reclaimable|KReclaimable) field="KReclaimable";;
-    --slab|Slab) field="Slab";;
-    --s-reclaimable|SReclaimable) field="SReclaimable";;
-    --s-unreclaim|SUnreclaim) field="SUnreclaim";;
-    --kernel-stack|KernelStack) field="KernelStack";;
-    --page-tables|PageTables) field="PageTables";;
-    --quicklists|Quicklists) field="Quicklists";;
-    --nfs-unstable|NFS_Unstable) field="NFS_Unstable";;
-    --bounce|Bounce) field="Bounce";;
-    --writeback-tmp|WritebackTmp) field="WritebackTmp";;
-    --commit-limit|CommitLimit) field="CommitLimit";;
-    --committed-as|Committed_AS) field="Committed_AS";;
-    --vmalloc-total|VmallocTotal) field="VmallocTotal";;
-    --vmalloc-used|VmallocUsed) field="VmallocUsed";;
-    --vmalloc-chunk|VmallocChunk) field="VmallocChunk";;
-    --hardware-corrupted|HardwareCorrupted) field="HardwareCorrupted";;
-    --lazy-free|LazyFree) field="LazyFree";;
-    --anon-huge-pages|AnonHugePages) field="AnonHugePages";;
-    --shmem-huge-pages|ShmemHugePages) field="ShmemHugePages";;
-    --shmem-pmd-mapped|ShmemPmdMapped) field="ShmemPmdMapped";;
-    --cma-total|CmaTotal) field="CmaTotal";;
-    --cma-free|CmaFree) field="CmaFree";;
-    --huge-pages-total|HugePages_Total) field="HugePages_Total";;
-    --huge-pages-free|HugePages_Free) field="HugePages_Free";;
-    --huge-pages-rsvd|HugePages_Rsvd) field="HugePages_Rsvd";;
-    --huge-pages-surp|HugePages_Surp) field="HugePages_Surp";;
-    --hugepagesize|Hugepagesize) field="Hugepagesize";;
-    --direct-map-4k|DirectMap4k) field="DirectMap4k";;
-    --direct-map-4M|DirectMap4M) field="DirectMap4M";;
-    --direct-map-2M|DirectMap2M) field="DirectMap2M";;
-    --direct-map-1G|DirectMap1G) field="DirectMap1G";;
-    *) return 1;;
+    --total|MemTotal) field="MemTotal" ;;
+    --free|MemFree) field="MemFree" ;;
+    --available|MemAvailable) field="MemAvailable" ;;
+    --buffers|Buffers) field="Buffers" ;;
+    --cached|Cached) field="Cached" ;;
+    --swap-cached|SwapCached) field="SwapCached" ;;
+    --active|Active) field="Active" ;;
+    --inactive|Inactive) field="Inactive" ;;
+    --active-anon|"Active(anon)") field="Active(anon)" ;;
+    --inactive-anon|"Inactive(anon)") field="Inactive(anon)" ;;
+    --active-file|"Active(file)") field="Active(file)" ;;
+    --inactive-file|"Inactive(file)") field="Inactive(file)" ;;
+    --unevictable|"Unevictable") field="Unevictable" ;;
+    --mlocked|Mlocked) field="Mlocked" ;;
+    --high-total|HighTotal) field="HighTotal" ;;
+    --high-free|HighFree) field="HighFree" ;;
+    --low-total|LowTotal) field="LowTotal" ;;
+    --low-free|LowFree) field="LowFree" ;;
+    --swap-total|SwapTotal) field="SwapTotal" ;;
+    --swap-free|SwapFree) field="SwapFree" ;;
+    --dirty|Dirty) field="Dirty" ;;
+    --writeback|Writeback) field="Writeback" ;;
+    --anon-pages|AnonPages) field="AnonPages" ;;
+    --mapped|Mapped) field="Mapped" ;;
+    --shmem|Shmem) field="Shmem" ;;
+    --k-reclaimable|KReclaimable) field="KReclaimable" ;;
+    --slab|Slab) field="Slab" ;;
+    --s-reclaimable|SReclaimable) field="SReclaimable" ;;
+    --s-unreclaim|SUnreclaim) field="SUnreclaim" ;;
+    --kernel-stack|KernelStack) field="KernelStack" ;;
+    --page-tables|PageTables) field="PageTables" ;;
+    --quicklists|Quicklists) field="Quicklists" ;;
+    --nfs-unstable|NFS_Unstable) field="NFS_Unstable" ;;
+    --bounce|Bounce) field="Bounce" ;;
+    --writeback-tmp|WritebackTmp) field="WritebackTmp" ;;
+    --commit-limit|CommitLimit) field="CommitLimit" ;;
+    --committed-as|Committed_AS) field="Committed_AS" ;;
+    --vmalloc-total|VmallocTotal) field="VmallocTotal" ;;
+    --vmalloc-used|VmallocUsed) field="VmallocUsed" ;;
+    --vmalloc-chunk|VmallocChunk) field="VmallocChunk" ;;
+    --hardware-corrupted|HardwareCorrupted) field="HardwareCorrupted" ;;
+    --lazy-free|LazyFree) field="LazyFree" ;;
+    --anon-huge-pages|AnonHugePages) field="AnonHugePages" ;;
+    --shmem-huge-pages|ShmemHugePages) field="ShmemHugePages" ;;
+    --shmem-pmd-mapped|ShmemPmdMapped) field="ShmemPmdMapped" ;;
+    --cma-total|CmaTotal) field="CmaTotal" ;;
+    --cma-free|CmaFree) field="CmaFree" ;;
+    --huge-pages-total|HugePages_Total) field="HugePages_Total" ;;
+    --huge-pages-free|HugePages_Free) field="HugePages_Free" ;;
+    --huge-pages-rsvd|HugePages_Rsvd) field="HugePages_Rsvd" ;;
+    --huge-pages-surp|HugePages_Surp) field="HugePages_Surp" ;;
+    --hugepagesize|Hugepagesize) field="Hugepagesize" ;;
+    --direct-map-4k|DirectMap4k) field="DirectMap4k" ;;
+    --direct-map-4M|DirectMap4M) field="DirectMap4M" ;;
+    --direct-map-2M|DirectMap2M) field="DirectMap2M" ;;
+    --direct-map-1G|DirectMap1G) field="DirectMap1G" ;;
+    *) return 1 ;;
   esac
 
   local res
@@ -1137,8 +1137,8 @@ lib_os_ps_get_ownpid() {
   local p
 
   case "${arg_varname}" in
-    p) return 1;;
-    *) lib_core_is --varname "${arg_varname}" || return;;
+    p) return 1 ;;
+    *) lib_core_is --varname "${arg_varname}" || return ;;
   esac
 
   p="$(exec sh -c 'echo "$PPID"')" && \

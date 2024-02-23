@@ -109,7 +109,7 @@ lib_msg_dialog_autosize() {
 
   case "${arg_select}" in
     ""|-h|--height|-w|--width) ;;
-    *) false;;
+    *) false ;;
   esac                                    && \
   [ "${arg_ratio}" -ge "1" ] 2>/dev/null  && \
   if lib_core_is --set "${arg_height}"; then
@@ -144,9 +144,9 @@ lib_msg_dialog_autosize() {
   fi
 
   case "${arg_select}" in
-    "") printf "%s %s" "${arg_height}" "${arg_width}";;
-    -h|--height) printf "%s" "${arg_height}";;
-    -w|--width) printf "%s" "${arg_width}";;
+    "") printf "%s %s" "${arg_height}" "${arg_width}" ;;
+    -h|--height) printf "%s" "${arg_height}" ;;
+    -w|--width) printf "%s" "${arg_width}" ;;
   esac
 }
 
@@ -246,8 +246,8 @@ lib_msg_message() {
           lib_msg_print_heading -e "${arg_msg_std}" >&2
           __lib_msg_log_error "${arg_msg_syslog}"
           ;;
-        --syslog|syslog) __lib_msg_log_error "${arg_msg_syslog}";;
-        --terminal|terminal) lib_msg_print_heading -e "${arg_msg_std}" >&2;;
+        --syslog|syslog) __lib_msg_log_error "${arg_msg_syslog}" ;;
+        --terminal|terminal) lib_msg_print_heading -e "${arg_msg_std}" >&2 ;;
       esac
       ;;
 
@@ -258,8 +258,8 @@ lib_msg_message() {
           lib_core_echo "false" "false" "${arg_msg_std}"
           __lib_msg_log_info "${arg_msg_syslog}"
           ;;
-        --syslog|syslog) __lib_msg_log_info "${arg_msg_syslog}";;
-        --terminal|terminal) lib_core_echo "false" "false" "${arg_msg_std}";;
+        --syslog|syslog) __lib_msg_log_info "${arg_msg_syslog}" ;;
+        --terminal|terminal) lib_core_echo "false" "false" "${arg_msg_std}" ;;
       esac
       ;;
 
@@ -270,8 +270,8 @@ lib_msg_message() {
           lib_msg_print_heading -w "${arg_msg_std}"
           __lib_msg_log_warning "${arg_msg_syslog}"
           ;;
-        --syslog|syslog) __lib_msg_log_warning "${arg_msg_syslog}";;
-        --terminal|terminal) lib_msg_print_heading -w "${arg_msg_std}";;
+        --syslog|syslog) __lib_msg_log_warning "${arg_msg_syslog}" ;;
+        --terminal|terminal) lib_msg_print_heading -w "${arg_msg_std}" ;;
       esac
       ;;
 
@@ -788,13 +788,13 @@ lib_msg_print_propvalue()  {
   local val_align
   case "${arg_align_body}" in
     -l|--left|-c|--center|-r|--right) ;;
-    *) false;;
+    *) false ;;
   esac                                                                     && \
   case "${arg_align_content}" in
-    -l|--left) prop_align="-"; val_align="-";;
-    -c|--center) prop_align=""; val_align="-";;
-    -r|--right) prop_align=""; val_align="";;
-    *) false;;
+    -l|--left) prop_align="-"; val_align="-" ;;
+    -c|--center) prop_align=""; val_align="-" ;;
+    -r|--right) prop_align=""; val_align="" ;;
+    *) false ;;
   esac                                                                     && \
   [ ${arg_padding} -ge 1 ] 2>/dev/null                                     && \
   [ ${#arg_separator} -eq 1 ] 2>/dev/null                                  && \
@@ -1148,17 +1148,17 @@ lib_msg_term_get() {
   local result
   if command -v "tput" >/dev/null; then
     case "${arg_select}" in
-      --cols) result="$(tput cols)";;
-      --lines|--rows) result="$(tput lines)";;
-      *) return 1;;
+      --cols) result="$(tput cols)" ;;
+      --lines|--rows) result="$(tput lines)" ;;
+      *) return 1 ;;
     esac
   elif command -v "stty" >/dev/null; then
     local size
     size=
     case "${arg_select}" in
-      --cols) result="$(stty size 2>/dev/null | cut -d' ' -f2)";;
-      --lines|--rows) result="$(stty size 2>/dev/null | cut -d' ' -f1)";;
-      *) return 1;;
+      --cols) result="$(stty size 2>/dev/null | cut -d' ' -f2)" ;;
+      --lines|--rows) result="$(stty size 2>/dev/null | cut -d' ' -f1)" ;;
+      *) return 1 ;;
     esac
   else
     return 1

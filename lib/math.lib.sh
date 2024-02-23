@@ -288,9 +288,9 @@ lib_math_sign() {
     continue
 
     case "${var}" in
-      [+-]0|0) printf "%s" "0";;
-      -?*) printf "%s" "-1";;
-      *) printf "%s" "+1";;
+      [+-]0|0) printf "%s" "0" ;;
+      -?*) printf "%s" "-1" ;;
+      *) printf "%s" "+1" ;;
     esac
 
     i="$(( i + 1 ))"

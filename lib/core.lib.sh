@@ -326,7 +326,7 @@ lib_core_env_append() {
         exitcode="1"
         ;;
 
-      *) exitcode="2"; break;;
+      *) exitcode="2"; break ;;
     esac
   done
 
@@ -370,7 +370,7 @@ lib_core_env_remove() {
         exitcode="1"
         ;;
 
-      *) exitcode="2"; break;;
+      *) exitcode="2"; break ;;
     esac
   done
 
@@ -429,12 +429,12 @@ __lib_core_file_get() {
   dir=$(dirname -- "${arg_file}"; echo .); dir=${dir%.}
 
   case "${arg_select}" in
-    -a|--absolute) lib_core_path_get_abs "${arg_file}";;
-    -d|--dir) printf "%s" "${dir}";;
-    -e|--extension) printf "%s" "${base##*.}";;
-    -f|--file) printf "%s" "${base}";;
-    -n|--name) printf "%s" "${base%%.*}";;
-    *) return 1;;
+    -a|--absolute) lib_core_path_get_abs "${arg_file}" ;;
+    -d|--dir) printf "%s" "${dir}" ;;
+    -e|--extension) printf "%s" "${base##*.}" ;;
+    -f|--file) printf "%s" "${base}" ;;
+    -n|--name) printf "%s" "${base%%.*}" ;;
+    *) return 1 ;;
   esac
 }
 
@@ -821,12 +821,12 @@ lib_core_msg() {
 
   case "$1" in
     --error)
-      exitcode="1"; prefix="[ERROR]"; pri="err"; fd="2"; std="stderr"; shift;;
+      exitcode="1"; prefix="[ERROR]"; pri="err"; fd="2"; std="stderr"; shift ;;
     --info)
-      exitcode="0"; prefix="[INFO]"; pri="info"; fd="1"; std="stdout"; shift;;
+      exitcode="0"; prefix="[INFO]"; pri="info"; fd="1"; std="stdout"; shift ;;
     --warning)
       exitcode="0"; prefix="[WARNING]"; pri="warning"; fd="1"; std="stdout"
-      shift;;
+      shift ;;
     *) ;;
   esac
 
@@ -1245,7 +1245,7 @@ lib_core_str_is_multiline() {
   for str in "$@"; do
     case "${str}" in
       *"${LIB_C_STR_NEWLINE}"*) ;;
-      *) return 1;;
+      *) return 1 ;;
     esac
   done
 }
@@ -1463,7 +1463,7 @@ lib_core_str_split() {
           str="$(lib_core_str_remove_trailing_spaces "$str")"
           printf "%s\n" "$str"
           ;;
-        *) continue;;
+        *) continue ;;
       esac
     done
   else
@@ -1493,10 +1493,10 @@ __lib_core_str_to() {
   local regex_src
   local regex_dst
   case "${arg_select}" in
-    --const) regex_src="[[:lower:]-]"; regex_dst="[[:upper:]_]";;
-    --lower) regex_src="[:upper:]"; regex_dst="[:lower:]";;
-    --upper) regex_src="[:lower:]"; regex_dst="[:upper:]";;
-    *) return 1;;
+    --const) regex_src="[[:lower:]-]"; regex_dst="[[:upper:]_]" ;;
+    --lower) regex_src="[:upper:]"; regex_dst="[:lower:]" ;;
+    --upper) regex_src="[:lower:]"; regex_dst="[:upper:]" ;;
+    *) return 1 ;;
   esac
 
   local var
