@@ -431,9 +431,14 @@ __lib_core_file_get() {
   case "${arg_select}" in
     -a|--absolute) lib_core_path_get_abs "${arg_file}" ;;
     -d|--dir) printf "%s" "${dir}" ;;
-    -e|--extension) printf "%s" "${base##*.}" ;;
+    -e|--extension)
+      case "${base}" in
+        *.*) printf "%s" "${base##*.}" ;;
+        *)   ;;
+      esac
+      ;;
     -f|--file) printf "%s" "${base}" ;;
-    -n|--name) printf "%s" "${base%%.*}" ;;
+    -n|--name) printf "%s" "${base%.*}" ;;
     *) return 1 ;;
   esac
 }
