@@ -227,9 +227,9 @@ apt install bc bind9-dnsutils coreutils dash dialog iproute2 libc-bin netcat net
 
     # Source libraries
     for lib in ./*.lib.sh; do
-      . "${lib}"                                                                || \
+      . "${lib}"                                                        || \
       {
-        printf "%s\n\n"                                                         \
+        printf "%s\n\n"                                                 \
           "ERROR: Library '$lib' could not be loaded. Aborting..." >&2
         cd "${CWD}"
         return 1
@@ -521,10 +521,6 @@ Project Link: [https://github.com/fkemser/SHlib](https://github.com/fkemser/SHli
 [license-url]: https://github.com/fkemser/SHlib/blob/main/LICENSE
 [linkedin-shield]: https://img.shields.io/badge/-LinkedIn-black.svg?style=for-the-badge&logo=linkedin&colorB=555
 [linkedin-url]: https://linkedin.com/in/linkedin_username
-[screenshot1]: res/screenshot1.gif
-[screenshot2]: res/screenshot2.gif
-[screenshot3]: res/screenshot3.gif
-[screenshot4]: res/screenshot4.gif
 
 [LaTeX-shield]: https://img.shields.io/badge/latex-%23008080.svg?style=for-the-badge&logo=latex&logoColor=white
 [LaTeX-url]: https://www.latex-project.org/
