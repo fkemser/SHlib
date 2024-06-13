@@ -151,12 +151,14 @@ lib_os_boot_configure() {
 
 #===  FUNCTION  ================================================================
 #         NAME:  lib_os_boot_configure_grub
-#  DESCRIPTION:  Modify "GRUB_CMDLINE_LINUX_DEFAULT" in GRUB settings
+#  DESCRIPTION:  !!! CAUTION - PLEASE USE THIS FUNCTION CAREFULLY !!!
+#                Modify "GRUB_CMDLINE_LINUX_DEFAULT" in GRUB settings
+#
 # PARAMETER  1:  CPU range for "arg_isolcpus", e.g. 1-7
 #                (optional, default: <option is removed>)
 #            2:  Enable memory cgroups (true|false) (default: 'true')
 #            3:  Disable security modules (AppArmor/SELinux)
-#                (true|false) (default: 'true')
+#                (true|false) (default: 'false')
 #===============================================================================
 lib_os_boot_configure_grub() {
   lib_core_echo "true" "false" "GRUB detected."
@@ -169,9 +171,10 @@ lib_os_boot_configure_grub() {
   #-----------------------------------------------------------------------------
   local arg_isolcpus="$1"
   local arg_memcgroup_enable="${2:-true}"
-  local arg_secmodule_disable="${3:-true}"
+  local arg_secmodule_disable="${3:-false}"
 
-  lib_core_is --bool "${arg_memcgroup_enable}" || return
+  lib_core_is --bool "${arg_memcgroup_enable}" "${arg_secmodule_disable}" || \
+  return
 
   #-----------------------------------------------------------------------------
   #  Get current options of GRUB_CMDLINE_LINUX_DEFAULT and remove
@@ -1461,7 +1464,8 @@ lib_os_ps_pidlock() {
 #===============================================================================
 #===  FUNCTION  ================================================================
 #         NAME:  lib_os_scp_no_host_key_check
-#  DESCRIPTION:  SCP wrapper (SSH's host key binding check disabled)
+#  DESCRIPTION:  !!! CAUTION - PLEASE USE THIS FUNCTION CAREFULLY !!!
+#                SCP wrapper (SSH's host key binding check disabled)
 # PARAMETER  1:  Source URI, e.g. 'username@host.fqdn:/tmp/app.log'
 #            2:  Destination URI, e.g. '/home/ubuntu'
 #         3...:  SCP options, e.g. '-r'
@@ -1482,7 +1486,8 @@ lib_os_scp_no_host_key_check() {
 
 #===  FUNCTION  ================================================================
 #         NAME:  lib_os_ssh_no_host_key_check
-#  DESCRIPTION:  SSH command wrapper (SSH's host key binding check disabled)
+#  DESCRIPTION:  !!! CAUTION - PLEASE USE THIS FUNCTION CAREFULLY !!!
+#                SSH command wrapper (SSH's host key binding check disabled)
 # PARAMETER  1:  SSH URI, e.g. username@host.fqdn
 #                (multiple URIs separated by space)
 #       2 ... :  Command(s) to execute - please make sure ...
@@ -1562,7 +1567,8 @@ lib_os_ssh_test() {
 
 #===  FUNCTION  ================================================================
 #         NAME:  lib_os_ssh_wrapper
-#  DESCRIPTION:  SSH command wrapper
+#  DESCRIPTION:  !!! CAUTION - PLEASE USE THIS FUNCTION CAREFULLY !!!
+#                SSH command wrapper
 # PARAMETER  1:  SSH URI, e.g. username@host.fqdn
 #                (multiple URIs separated by space)
 #       2 ... :  Command(s) to execute, please make sure ...

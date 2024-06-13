@@ -671,7 +671,7 @@ lib_core_is() {
       --notempty|--set) true ;;
       --readable)       [ -r "${var}" ] ;;
       --writeable)      [ -w "${var}" ] ;;
-      --executeable)    [ -x "${var}" ] ;;
+      --executable)    [ -x "${var}" ] ;;
       --empty|--unset)  [ -z "${var}" ] ;;
 
       #-------------------------------------------------------------------------

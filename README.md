@@ -113,11 +113,11 @@ After developing several shell scripts it was time to gather recurring code patt
   - string manipulation,
 
 - mathematical functions and operations, such as
-  - advanced calculation using 'bc'
+  - advanced calculation using `bc`
     (supporting floating point numbers),
   - converting units, e.g. from 'MB' into 'GB',
   - checking if a number is within a specified range,
-  - functions like 'abs' or 'sign',
+  - functions like `abs` or `sign`,
 
 - logging and output formatting functions, such as
   - system logging,

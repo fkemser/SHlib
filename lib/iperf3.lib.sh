@@ -9,7 +9,7 @@
 #
 #        USAGE:   . iperf3.lib.sh
 #
-#  DESCRIPTION:   Shell library containg 'iperf3'-related functions
+#  DESCRIPTION:   Shell library containing 'iperf3'-related functions
 #
 #         BUGS:   ---
 #

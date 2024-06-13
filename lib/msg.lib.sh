@@ -815,7 +815,7 @@ lib_msg_print_propvalue()  {
   #-----------------------------------------------------------------------------
   #  Determine maximum property/value width
   #-----------------------------------------------------------------------------
-  #    (Terminal|Userdefined) window width       <arg_width>
+  #    (Terminal|User-defined) window width      <arg_width>
   #  - 2x Padding width                       -  2x <arg_padding>
   #  - 1 (Separator character)                -  1
   #  - Minimum (value|property) width         -  <WIDTH_MIN>
@@ -1109,7 +1109,7 @@ lib_msg_print_propvalue()  {
         local line_val
         IFS="${LIB_C_STR_NEWLINE}"
 
-        # Process multline property
+        # Process multiline property
         printf "%s" "${str_prop}" | while IFS= read -r line_prop || [ -n "${line_prop}" ]; do
           line_val="$(printf "%s" "${str_val}" | tail -n+${i} | head -n1)"
           line_prop="$(lib_core_str_remove_trailing " " "${line_prop}")"
