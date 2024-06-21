@@ -273,7 +273,7 @@ lib_os_cpu_has_feature() {
 
   [ -n "${LIB_OS_DIR_PROCFS}" ]                       && \
   lib_core_is --file "${LIB_OS_DIR_PROCFS}/cpuinfo"   && \
-  lib_core_is --set "${arg_flag}"                     || \
+  lib_core_is --not-empty "${arg_flag}"               || \
   return
 
   __lib_os_cpu_has_feature "$@"
@@ -668,8 +668,8 @@ __lib_os_dev_is_mounted() {
 
     IFS="${LIB_C_STR_NEWLINE}"
     for slave in ${list_slave}; do
-      lib_core_is --set "${slave}" && \
-      exitcode="0"                      && \
+      lib_core_is --not-empty "${slave}"  && \
+      exitcode="0"                        && \
       break
     done
     IFS="$OLDIFS"
@@ -704,7 +704,7 @@ __lib_os_dev_umount() {
     list_slave="$(__lib_os_dev_get "MOUNTPOINT" "true" "${dev}")"
     IFS="${LIB_C_STR_NEWLINE}"
     for slave in ${list_slave}; do
-      lib_core_is --set "${slave}"              && \
+      lib_core_is --not-empty "${slave}"        && \
       { lib_core_sudo umount "${slave}" || \
         exitcode="$?"
       }
@@ -733,8 +733,8 @@ __lib_os_dev_umount() {
 lib_os_dev_lsblk() {
   local arg_columns="$1"
 
-  lib_core_is --cmd "lsblk"           && \
-  lib_core_is --set "${arg_columns}"  && \
+  lib_core_is --cmd "lsblk"                 && \
+  lib_core_is --not-empty "${arg_columns}"  && \
   __lib_os_dev_get "$@"
 }
 
@@ -850,7 +850,7 @@ __lib_os_lib() {
       result="$(find "/lib/" -name "${var}" | head -1)"
     fi
 
-    lib_core_is --set "${result}"                                             && \
+    lib_core_is --not-empty "${result}"                                       && \
 
     case "${arg_type}" in
       -d|--dir) __lib_core_file_get --dir "${result}" ;;
@@ -959,7 +959,7 @@ __lib_os_proc_meminfo() {
   local res_unit
   res="$(cat "${LIB_OS_DIR_PROCFS}/meminfo" | grep -e "^${field}:" | tr -s " ")"
 
-  if lib_core_is --set "${res}"; then
+  if lib_core_is --not-empty "${res}"; then
     res_val="$(printf "%s" "${res}" | cut -d " " -f2)"
     res_unit="$(printf "%s" "${res}" | cut -d " " -f3)"
     lib_math_convert_unit "${res_val}" "${res_unit}" "${arg_unit}"
@@ -1156,7 +1156,7 @@ lib_os_ps_get_ownpid() {
 #===============================================================================
 lib_os_ps_get_pid() {
   local arg_procname="$1"
-  lib_core_is --set "${arg_procname}" || return
+  lib_core_is --not-empty "${arg_procname}" || return
 
   __lib_os_ps_get_pid "$@"
 }
@@ -1184,8 +1184,8 @@ lib_os_ps_kill_by_name() {
   local arg_procname="$1"
   local arg_signal="${2:-15}"
 
-  lib_core_is --set "${arg_procname}"   && \
-  lib_core_is --signal "${arg_signal}"  || \
+  lib_core_is --not-empty "${arg_procname}" && \
+  lib_core_is --signal "${arg_signal}"      || \
   return
 
   __lib_os_ps_kill_by_name "$@"
@@ -1198,7 +1198,7 @@ __lib_os_ps_kill_by_name() {
   local pids
   pids="$(lib_os_ps_get_pid "${arg_procname}" | xargs)"
 
-  lib_core_is --set "${pids}" && lib_core_sudo kill -${arg_signal} ${pids}
+  lib_core_is --not-empty "${pids}" && lib_core_sudo kill -${arg_signal} ${pids}
 }
 
 #===  FUNCTION  ================================================================

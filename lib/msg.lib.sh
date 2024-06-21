@@ -112,10 +112,10 @@ lib_msg_dialog_autosize() {
     *) false ;;
   esac                                    && \
   [ "${arg_ratio}" -ge "1" ] 2>/dev/null  && \
-  if lib_core_is --set "${arg_height}"; then
+  if lib_core_is --not-empty "${arg_height}"; then
     [ "${arg_height}" -ge "20" ] 2>/dev/null
   fi                                      && \
-  if lib_core_is --set "${arg_width}"; then
+  if lib_core_is --not-empty "${arg_width}"; then
     [ "${arg_width}" -ge "80" ] 2>/dev/null
   fi                                      || \
   return
@@ -666,7 +666,7 @@ lib_msg_print_list() {
   local arg_br_val="${5:-false}"
   local arg_br_str="${6:-true}"
 
-  lib_core_is --set "${arg_list}"                     && \
+  lib_core_is --not-empty "${arg_list}"               && \
   lib_core_is --bool "${arg_br_val}" "${arg_br_str}"  && \
   __lib_msg_print_list "$@"
 }

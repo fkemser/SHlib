@@ -89,7 +89,7 @@ lib_net_bridge_create() {
   local arg_disable_stp="${4:-false}"
 
   lib_core_is --cmd ip bridge                                 && \
-  lib_core_is --set "${arg_bridge}"                           && \
+  lib_core_is --not-empty "${arg_bridge}"                     && \
   ! lib_core_is --bridge "${arg_bridge}"                      && \
   lib_core_is --iface ${arg_interfaces}                       && \
   lib_core_is --bool "${arg_move_addr}" "${arg_disable_stp}"  || \
@@ -122,7 +122,7 @@ __lib_net_bridge_create() {
     fi
 
     # (Optionally) transfer IP address to bridge
-    if ${arg_move_addr} && lib_core_is --set "${addr}"; then
+    if ${arg_move_addr} && lib_core_is --not-empty "${addr}"; then
       # First remove address from the physical interface ...
       [ "$(lib_net_iface_get_ip "${interface}")" = "${addr}" ] && \
         lib_net_iface_ip --del "${interface}" "${addr}"
@@ -185,7 +185,7 @@ lib_net_bridge_remove() {
   #-----------------------------------------------------------------------------
   #  (Optionally) re-transfer IP address to first bridge member
   #-----------------------------------------------------------------------------
-  if ${arg_move_addr} && lib_core_is --set "${addr}"; then
+  if ${arg_move_addr} && lib_core_is --not-empty "${addr}"; then
     lib_net_iface_is --up "${member_first}" && \
     lib_net_iface_ip --add "${member_first}" "${addr}"
   fi
@@ -300,7 +300,7 @@ __lib_net_dns_resolve() {
       ;;
   esac
 
-  lib_core_is --set "${list_ip}" && printf "${list_ip}"
+  lib_core_is --not-empty "${list_ip}" && printf "${list_ip}"
 }
 
 #===============================================================================

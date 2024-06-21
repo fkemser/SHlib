@@ -101,7 +101,7 @@ lib_math_calc() {
   local arg_op="$1"
   local arg_scale="${2:-6}"
 
-  lib_core_is --set "${arg_op}"         && \
+  lib_core_is --not-empty "${arg_op}"   && \
   lib_core_is --int-pos0 "${arg_scale}" || \
   return
 
@@ -188,7 +188,7 @@ lib_math_is_within_range() {
   local arg_value="$2"
   local arg_max="$3"
 
-  lib_core_is --set "${arg_value}" || \
+  lib_core_is --not-empty "${arg_value}" || \
   return
 
   local float="false"
@@ -241,20 +241,22 @@ lib_math_is_within_range_u() {
   local num    # Value only
   local unit   # Unit only
 
-  if lib_core_is --set "${arg_min}" && ! lib_core_is --number "${arg_min}"; then
+  if lib_core_is --not-empty "${arg_min}" && ! lib_core_is --number "${arg_min}"
+  then
     num="${arg_min%%[^[:digit:].e+-]*}"
     unit="${arg_min##*[[:space:][:digit:]]}"
     arg_min="$(lib_math_convert_unit "${num}" "${unit}" "b")" || return
   fi
 
-  if lib_core_is --set "${arg_value}" && ! lib_core_is --number "${arg_value}"
+  if lib_core_is --not-empty "${arg_value}" && ! lib_core_is --number "${arg_value}"
   then
     num="${arg_min%%[^[:digit:].e+-]*}"
     unit="${arg_value##*[[:space:][:digit:]]}"
     arg_value="$(lib_math_convert_unit "${num}" "${unit}" "b")" || return
   fi
 
-  if lib_core_is --set "${arg_max}" && ! lib_core_is --number "${arg_max}"; then
+  if lib_core_is --not-empty "${arg_max}" && ! lib_core_is --number "${arg_max}"
+  then
     num="${arg_min%%[^[:digit:].e+-]*}"
     unit="${arg_max##*[[:space:][:digit:]]}"
     arg_max="$(lib_math_convert_unit "${num}" "${unit}" "b")" || return

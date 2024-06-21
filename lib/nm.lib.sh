@@ -75,9 +75,9 @@ lib_nm_con_exists() {
   local arg_type="${2:-.*}"
   local arg_active="${3:-false}"
 
-  lib_core_is --cmd "nmcli"           && \
-  lib_core_is --set "${arg_connid}"   && \
-  lib_core_is --bool "${arg_active}"  || \
+  lib_core_is --cmd "nmcli"               && \
+  lib_core_is --not-empty "${arg_connid}" && \
+  lib_core_is --bool "${arg_active}"      || \
   return
 
   if nmcli -g type,name con show \
@@ -109,9 +109,9 @@ lib_nm_con_get() {
   local arg_property="$2"
   local arg_key="$3"
 
-  lib_core_is --cmd "nmcli"           && \
-  lib_core_is --set "${arg_connid}"   && \
-  lib_core_is --set "${arg_property}" && \
+  lib_core_is --cmd "nmcli"                                 && \
+  lib_core_is --not-empty "${arg_connid}" "${arg_property}" || \
+  return
 
   if lib_core_is --empty "${arg_key}"; then
     nmcli -g "${arg_property}" con show "${arg_connid}" 2>/dev/null
@@ -165,10 +165,8 @@ lib_nm_con_modify() {
   local arg_key="$3"
   local arg_newval="$4"
 
-  lib_core_is --cmd "nmcli"           && \
-  lib_core_is --set "${arg_connid}"   && \
-  lib_core_is --set "${arg_property}" && \
-  lib_core_is --set "${arg_newval}"   || \
+  lib_core_is --cmd "nmcli"                                                 && \
+  lib_core_is --not-empty "${arg_connid}" "${arg_property}" "${arg_newval}" || \
   return
 
   if lib_core_is --empty "${arg_key}"; then

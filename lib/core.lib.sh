@@ -519,8 +519,8 @@ lib_core_int_is_within_range() {
   local arg_value="$2"
   local arg_max="$3"
 
-  lib_core_is --set "${arg_value}" && \
-  lib_core_is --int "${arg_value}"      || \
+  lib_core_is --not-empty "${arg_value}"  && \
+  lib_core_is --int "${arg_value}"        || \
   return 3
 
   local arg
@@ -581,6 +581,7 @@ lib_core_int_min() {
 
 #===  FUNCTION  ================================================================
 #         NAME:  lib_core_is (lib_core_test)
+#
 #  DESCRIPTION:  Perform checks on current environment (root, interactive
 #                shell, etc.) and arguments (bool, file, integer, etc.)
 #
@@ -589,7 +590,7 @@ lib_core_int_min() {
 #
 #                (II) Arguments
 #                     Check if one or more arguments are of a certain 'type'
-#                     (integer, file, etc.)
+#                     (bool, file, integer, etc.)
 #
 # PARAMETER  1:  Test selector ("type of test")
 #                For a list of selectors please have a look at the 'case'
@@ -652,10 +653,11 @@ lib_core_is() {
   local var
   for var in "$@"; do
     case "${arg_select}" in
-      --empty|--unset)  [ -z "${var}" ] && continue || return ;;
+      --empty)  [ -z "${var}" ] && continue || return ;;
       *) ;;
     esac
 
+    # For the following tests <var> must not be empty
     [ -n "${var}" ]                                                         && \
     case "${arg_select}" in
       #-------------------------------------------------------------------------
@@ -668,11 +670,11 @@ lib_core_is() {
       --exists)         [ -e "${var}" ] ;;
       --file)           [ -f "${var}" ] ;;
       --symlink)        [ -h "${var}" ] ;;
-      --notempty|--set) true ;;
+      --not-empty)      true ;;
       --readable)       [ -r "${var}" ] ;;
       --writeable)      [ -w "${var}" ] ;;
-      --executable)    [ -x "${var}" ] ;;
-      --empty|--unset)  [ -z "${var}" ] ;;
+      --executable)     [ -x "${var}" ] ;;
+      --empty)          [ -z "${var}" ] ;;
 
       #-------------------------------------------------------------------------
       #  other tests
@@ -755,8 +757,8 @@ lib_core_list_contains_str() {
   local arg_list="$2"
   local arg_delim="${3:- }"
 
-  lib_core_is --set "${arg_str}" "${arg_list}"  && \
-  [ "${#arg_delim}" -eq "1" ]                   || \
+  lib_core_is --not-empty "${arg_str}" "${arg_list}"  && \
+  [ "${#arg_delim}" -eq "1" ]                         || \
   return 2
 
   local IFS="${arg_delim}"
@@ -790,8 +792,8 @@ lib_core_list_contains_str_ptr() {
   local arg_ptr_prefix="$4"
   local arg_ptr_suffix="$5"
 
-  lib_core_is --set "${arg_str}" "${arg_list}"  && \
-  [ "${#arg_delim}" -eq "1" ]                   || \
+  lib_core_is --not-empty "${arg_str}" "${arg_list}"  && \
+  [ "${#arg_delim}" -eq "1" ]                         || \
   return 2
 
   local IFS="${arg_delim}"
@@ -1216,7 +1218,7 @@ lib_core_str_get_substr() {
   local arg_start="$2"
   local arg_end="$3"
 
-  lib_core_is --set "${arg_str}" || \
+  lib_core_is --not-empty "${arg_str}" || \
   return
 
   lib_core_int_is_within_range "1" "${arg_start}" "${#arg_str}"          || \
@@ -1341,7 +1343,7 @@ lib_core_str_remove_newline() {
   local arg_keep_blankline="$(lib_core_bool2int "${3:-false}")"
   local arg_trim_spaces="$(lib_core_bool2int "${4:-false}")"
 
-  lib_core_is --set                                        \
+  lib_core_is --not-empty                                     \
     "${arg_str}" "${arg_keep_blankline}" "${arg_trim_spaces}" && \
   [ ${#arg_delim} -ge 1 ] 2>/dev/null                         || \
   return
@@ -1635,6 +1637,79 @@ lib_core_time_timestamp() {
   esac
 
   printf "%s" "${timestamp}"
+}
+
+#===  FUNCTION  ================================================================
+#         NAME:  lib_core_var_is
+#
+#  DESCRIPTION:  Perform general checks (defined, null, etc.) and 
+#                type checks (bool, file, integer, etc.) on variables
+#
+#                (I)  Variable Checks (defined, null, etc.)
+#                (II) Type Checks (is bool, file, integer, etc.)
+#
+# PARAMETER  1:  Test selector ("type of test")
+#                For a list of selectors please have a look at the 'case'
+#                statement below and in <lib_core_is()>
+#
+#         2...:  Variable(s) to check (identifier(s)/name(s))
+#
+#                !!! This function expects the variables' identifiers/names
+#                (var1 var2 ...) and not their values ($var1 $var2 ...) !!!
+#
+#   RETURNS  0:  All variables passed the test
+#            1:  At least one variable failed the test
+#
+#      EXAMPLE:  lib_core_var_is --defined var1
+#                lib_core_var_is --file var1 var2
+#===============================================================================
+lib_core_var_is() {
+  local arg_select="$1"; shift
+
+  # Check if variables have been passed (beside the test selector)
+  lib_core_args_passed "$@" || return
+
+  # Check all variables and break with the first one that fails
+  local var
+  for var in "$@"; do
+    lib_core_is --varname "${var}" && \
+    case "${arg_select}" in
+      #-------------------------------------------------------------------------
+      #  (I) Variable checks
+      #-------------------------------------------------------------------------
+      #  See: http://pubs.opengroup.org/onlinepubs/009695399/utilities/xcu_chap02.html#tag_02_06_02
+      #-------------------------------------------------------------------------
+      --not-empty|--not-null)
+        #  Set and Not Null
+        eval [ -n \"\${$var}\" ]
+        ;;
+
+      --empty|--null)
+        #  Set But Null (returns 1 in case the variable is not defined)
+        eval [ -z \"\${$var-x}\" ]
+        ;;
+
+      --defined|--set)
+        #  Set (variable is defined, can be either null or have value)
+        eval [ -n \"\${$var+x}\" ]
+        ;;
+
+      --not-defined|--unset)
+        #  Unset (variable is not defined)
+        eval [ -z \"\${$var+x}\" ]
+        ;;
+
+      #-------------------------------------------------------------------------
+      #  (II) Type checks
+      #-------------------------------------------------------------------------
+      *)
+        # All other checks are performed within <lib_core_is()>
+        eval lib_core_is \"\${arg_select}\" \"\${$var}\"
+        ;;
+    esac || \
+
+    return
+  done
 }
 
 #===============================================================================

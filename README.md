@@ -318,6 +318,7 @@ Function | Description
 `lib_core_sudo_background` | Execute one or more commands with root privileges and put them into background
 `lib_core_sysfs_get` | Wrapper for accessing `sysfs`
 `lib_core_time_timestamp` | Get current time in UNIX Epoch format
+`lib_core_var_is` | Perform general checks (defined, null, etc.) and type checks (bool, file, integer, etc.) on variables. Similar to `lib_core_is` but expects identifiers (`var1 var2 ...`) instead of values (`$var1 $var2 ...`).
 
 <p align="right">(<a href="#documentation">back to overview</a>)</p>
 

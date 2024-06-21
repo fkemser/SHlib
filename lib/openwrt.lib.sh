@@ -145,7 +145,7 @@ lib_openwrt_procd_install() {
   [ "$(lib_os_get --id)" = "${LIB_C_ID_DIST_OPENWRT}" ]                     && \
   lib_core_int_is_within_range "1" "${arg_start}" "99"                      && \
   lib_core_int_is_within_range "1" "${arg_stop}" "99"                       && \
-  lib_core_is --set "${arg_cmd_start}"                                      && \
+  lib_core_is --not-empty "${arg_cmd_start}"                                && \
   lib_core_is --bool "${arg_procd_respawn}" "${arg_enable}" "${arg_run}"    && \
   lib_core_int_is_within_range "1" "${arg_procd_respawn_threshold}" ""      && \
   lib_core_int_is_within_range "1" "${arg_procd_respawn_timeout}" ""        && \
@@ -179,7 +179,7 @@ EOF
   #-----------------------------------------------------------------------------
   #  boot()
   #-----------------------------------------------------------------------------
-  if lib_core_is --set "${arg_cmd_boot}"; then
+  if lib_core_is --not-empty "${arg_cmd_boot}"; then
     { lib_core_sudo tee -a "${initfile}" >/dev/null <<EOF
 boot() {
   config_load \${CONFIGURATION}
@@ -227,7 +227,7 @@ EOF
 EOF
   }                                                                         && \
 
-  if lib_core_is --set "${arg_uci_options}"; then
+  if lib_core_is --not-empty "${arg_uci_options}"; then
     lib_core_sudo tee -a "${initfile}" >/dev/null <<EOF
   procd_set_param file "/etc/config/\${CONFIGURATION}"
 EOF
@@ -239,7 +239,7 @@ EOF
 EOF
   fi                                                                        && \
 
-  if lib_core_is --set "${arg_procd_term_timeout}"; then
+  if lib_core_is --not-empty "${arg_procd_term_timeout}"; then
     lib_core_sudo tee -a "${initfile}" >/dev/null <<EOF
   procd_set_param term_timeout ${arg_procd_term_timeout}
 EOF
@@ -256,7 +256,7 @@ EOF
   #-----------------------------------------------------------------------------
   #  stop_service()
   #-----------------------------------------------------------------------------
-  if lib_core_is --set "${arg_cmd_stop}"; then
+  if lib_core_is --not-empty "${arg_cmd_stop}"; then
     lib_core_sudo tee -a "${initfile}" >/dev/null <<EOF
 stop_service() {
   ${arg_cmd_stop}
@@ -267,7 +267,7 @@ EOF
   #-----------------------------------------------------------------------------
   #  service_stopped()
   #-----------------------------------------------------------------------------
-  if lib_core_is --set "${arg_cmd_stopped}"; then
+  if lib_core_is --not-empty "${arg_cmd_stopped}"; then
     lib_core_sudo tee -a "${initfile}" >/dev/null <<EOF
 service_stopped() {
   ${arg_cmd_stopped}
@@ -278,7 +278,7 @@ EOF
   #-----------------------------------------------------------------------------
   #  reload_service()
   #-----------------------------------------------------------------------------
-  if lib_core_is --set "${arg_cmd_reload}"; then
+  if lib_core_is --not-empty "${arg_cmd_reload}"; then
     lib_core_sudo tee -a "${initfile}" >/dev/null <<EOF
 reload_service() {
   ${arg_cmd_reload}
