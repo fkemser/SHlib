@@ -57,6 +57,163 @@ done
 LIB_CORE_PARENT_SHELL_IS_TERMINAL=""
 
 #===============================================================================
+#  REGULAR EXPRESSIONS (see lib_core_regex()>)
+#===============================================================================
+#-------------------------------------------------------------------------------
+#  NETWORK (DNS)
+#-------------------------------------------------------------------------------
+readonly LIB_CORE_REGEX_NET_DNS_FQDN_TLD="[a-zA-Z-]{2,}" # top-level domain
+
+# Adapted from: R. Sabourin, http://regexlib.com/REDetails.aspx?regexp_id=391
+readonly LIB_CORE_REGEX_NET_DNS_FQDN_SEG="[a-zA-Z0-9]([a-zA-Z0-9-]{0,61}[a-zA-Z0-9]){0,1}"
+readonly LIB_CORE_REGEX_NET_DNS_FQDN="((${LIB_CORE_REGEX_NET_DNS_FQDN_SEG})\.){1,}(${LIB_CORE_REGEX_NET_DNS_FQDN_TLD})"
+readonly LIB_CORE_REGEX_NET_DNS_FQDN_OR_WILDCARD="(\*\.){0,1}(${LIB_CORE_REGEX_NET_DNS_FQDN})"
+readonly LIB_CORE_REGEX_NET_DNS_FQDN_WILDCARD="\*\.(${LIB_CORE_REGEX_NET_DNS_FQDN})"
+readonly LIB_CORE_REGEX_NET_DNS_SRV="_(${LIB_CORE_REGEX_NET_DNS_FQDN_SEG})\._(TCP|tcp|UDP|udp)\.(${LIB_CORE_REGEX_NET_DNS_FQDN})\.{0,1}"
+
+#-------------------------------------------------------------------------------
+#  NETWORK (IPv4)
+#-------------------------------------------------------------------------------
+# Adapted from: J. Goyvaerts, S. Levithan, https://www.oreilly.com/library/view/regular-expressions-cookbook/9780596802837/ch07s16.html
+readonly LIB_CORE_REGEX_NET_IPV4_ADDR_SEG="25[0-5]|2[0-4][0-9]|[01]{0,1}[0-9][0-9]{0,1}"
+readonly LIB_CORE_REGEX_NET_IPV4_ADDR="((${LIB_CORE_REGEX_NET_IPV4_ADDR_SEG})\.){3,3}(${LIB_CORE_REGEX_NET_IPV4_ADDR_SEG})"
+readonly LIB_CORE_REGEX_NET_IPV4_CIDR="(${LIB_CORE_REGEX_NET_IPV4_ADDR})\/(3[0-2]|[1-2][0-9]|[0-9])"
+readonly LIB_CORE_REGEX_NET_IPV4_RANGE="(${LIB_CORE_REGEX_NET_IPV4_ADDR})-(${LIB_CORE_REGEX_NET_IPV4_ADDR})"
+
+#-------------------------------------------------------------------------------
+#  NETWORK (IPv6)
+#-------------------------------------------------------------------------------
+# Adapted from: S. Ryan, https://community.helpsystems.com/forums/intermapper/miscellaneous-topics/5acc4fcf-fa83-e511-80cf-0050568460e4
+readonly LIB_CORE_REGEX_NET_IPV6_ADDR="((([0-9A-Fa-f]{1,4}:){7}([0-9A-Fa-f]{1,4}|:))|(([0-9A-Fa-f]{1,4}:){6}(:[0-9A-Fa-f]{1,4}|((25[0-5]|2[0-4][[:digit:]]|1[[:digit:]][[:digit:]]|[1-9]{0,1}[[:digit:]])(\.(25[0-5]|2[0-4][[:digit:]]|1[[:digit:]][[:digit:]]|[1-9]{0,1}[[:digit:]])){3})|:))|(([0-9A-Fa-f]{1,4}:){5}(((:[0-9A-Fa-f]{1,4}){1,2})|:((25[0-5]|2[0-4][[:digit:]]|1[[:digit:]][[:digit:]]|[1-9]{0,1}[[:digit:]])(\.(25[0-5]|2[0-4][[:digit:]]|1[[:digit:]][[:digit:]]|[1-9]{0,1}[[:digit:]])){3})|:))|(([0-9A-Fa-f]{1,4}:){4}(((:[0-9A-Fa-f]{1,4}){1,3})|((:[0-9A-Fa-f]{1,4}){0,1}:((25[0-5]|2[0-4][[:digit:]]|1[[:digit:]][[:digit:]]|[1-9]{0,1}[[:digit:]])(\.(25[0-5]|2[0-4][[:digit:]]|1[[:digit:]][[:digit:]]|[1-9]{0,1}[[:digit:]])){3}))|:))|(([0-9A-Fa-f]{1,4}:){3}(((:[0-9A-Fa-f]{1,4}){1,4})|((:[0-9A-Fa-f]{1,4}){0,2}:((25[0-5]|2[0-4][[:digit:]]|1[[:digit:]][[:digit:]]|[1-9]{0,1}[[:digit:]])(\.(25[0-5]|2[0-4][[:digit:]]|1[[:digit:]][[:digit:]]|[1-9]{0,1}[[:digit:]])){3}))|:))|(([0-9A-Fa-f]{1,4}:){2}(((:[0-9A-Fa-f]{1,4}){1,5})|((:[0-9A-Fa-f]{1,4}){0,3}:((25[0-5]|2[0-4][[:digit:]]|1[[:digit:]][[:digit:]]|[1-9]{0,1}[[:digit:]])(\.(25[0-5]|2[0-4][[:digit:]]|1[[:digit:]][[:digit:]]|[1-9]{0,1}[[:digit:]])){3}))|:))|(([0-9A-Fa-f]{1,4}:){1}(((:[0-9A-Fa-f]{1,4}){1,6})|((:[0-9A-Fa-f]{1,4}){0,4}:((25[0-5]|2[0-4][[:digit:]]|1[[:digit:]][[:digit:]]|[1-9]{0,1}[[:digit:]])(\.(25[0-5]|2[0-4][[:digit:]]|1[[:digit:]][[:digit:]]|[1-9]{0,1}[[:digit:]])){3}))|:))|(:(((:[0-9A-Fa-f]{1,4}){1,7})|((:[0-9A-Fa-f]{1,4}){0,5}:((25[0-5]|2[0-4][[:digit:]]|1[[:digit:]][[:digit:]]|[1-9]{0,1}[[:digit:]])(\.(25[0-5]|2[0-4][[:digit:]]|1[[:digit:]][[:digit:]]|[1-9]{0,1}[[:digit:]])){3}))|:)))(%.{1,}){0,1}"
+readonly LIB_CORE_REGEX_NET_IPV6_CIDR="(${LIB_CORE_REGEX_NET_IPV6_ADDR})\/(12[0-8]|1[0-1][0-9]|[1-9][0-9]|[0-9])"
+
+#-------------------------------------------------------------------------------
+#  NETWORK (FQDN/IPv4/IPv6)
+#-------------------------------------------------------------------------------
+readonly LIB_CORE_REGEX_NET_HOST="${LIB_CORE_REGEX_NET_DNS_FQDN}|${LIB_CORE_REGEX_NET_IPV4_ADDR}|${LIB_CORE_REGEX_NET_IPV6_ADDR}"
+
+#-------------------------------------------------------------------------------
+#  NETWORK (MAC)
+#-------------------------------------------------------------------------------
+# Adapted from: T. Rudyk, http://regexlib.com/REDetails.aspx?regexp_id=154
+readonly LIB_CORE_REGEX_NET_MAC="([0-9a-fA-F][0-9a-fA-F]:){5}([0-9a-fA-F][0-9a-fA-F])"
+
+#-------------------------------------------------------------------------------
+#  NETWORK (ICMP/TCP/UDP)
+#-------------------------------------------------------------------------------
+readonly LIB_CORE_REGEX_NET_ICMP_TYPE="[0-9]{1,2}|1[0-9]{2}|2[0-4][0-9]|25[0-5]|ping"
+
+# Adapted from: A. Gusarov, http://regexlib.com/REDetails.aspx?regexp_id=4958
+readonly LIB_CORE_REGEX_NET_TCPUDP_PORT="([1-9][0-9]{0,3}|[1-5][0-9]{4}|6[0-4][0-9]{3}|65[0-4][0-9]{2}|655[0-2][0-9]|6553[0-5])"
+readonly LIB_CORE_REGEX_NET_TCPUDP_PORT_RANGE="${LIB_CORE_REGEX_NET_TCPUDP_PORT}-${LIB_CORE_REGEX_NET_TCPUDP_PORT}"
+
+#-------------------------------------------------------------------------------
+#  IPSET
+#-------------------------------------------------------------------------------
+readonly LIB_CORE_REGEX_IPSET_IPADDR_4="(${LIB_CORE_REGEX_NET_IPV4_ADDR})|(${LIB_CORE_REGEX_NET_IPV4_CIDR})|(${LIB_CORE_REGEX_NET_IPV4_RANGE})"
+readonly LIB_CORE_REGEX_IPSET_IPADDR_6="(${LIB_CORE_REGEX_NET_IPV6_ADDR})|(${LIB_CORE_REGEX_NET_IPV6_CIDR})"
+readonly LIB_CORE_REGEX_IPSET_PORT_BITMAP="(${LIB_CORE_REGEX_NET_TCPUDP_PORT}(-${LIB_CORE_REGEX_NET_TCPUDP_PORT}){0,1})"
+readonly LIB_CORE_REGEX_IPSET_PORT_HASH_4_6="((tcp|sctp|udp|udplite|tcpudp):${LIB_CORE_REGEX_IPSET_PORT_BITMAP})"
+readonly LIB_CORE_REGEX_IPSET_PORT_HASH_4="${LIB_CORE_REGEX_IPSET_PORT_HASH_4_6}|(icmp:${LIB_CORE_REGEX_NET_ICMP_TYPE})"
+readonly LIB_CORE_REGEX_IPSET_PORT_HASH_6="${LIB_CORE_REGEX_IPSET_PORT_HASH_4_6}|(icmpv6:${LIB_CORE_REGEX_NET_ICMP_TYPE})"
+readonly LIB_CORE_REGEX_IPSET_SETNAME="[a-zA-Z0-9]([a-zA-Z0-9_]{0,1}[a-zA-Z0-9])*"
+
+#-------------------------------------------------------------------------------
+#  LUKS2
+#-------------------------------------------------------------------------------
+# See also: https://man7.org/linux/man-pages/man1/systemd-cryptenroll.1.html
+readonly LIB_CORE_REGEX_LUKS2_TPM2_PCRS="(1?[0-9]|2[0-3])(\+(1?[0-9]|2[0-3]))*"
+
+#-------------------------------------------------------------------------------
+#  DATA TYPES
+#-------------------------------------------------------------------------------
+readonly LIB_CORE_REGEX_TYPE_BOOLEAN="true|false"
+
+# Adapted from: J. Goyvaerts, S. Levithan, https://www.oreilly.com/library/view/regular-expressions-cookbook/9781449327453/ch06s10.html
+readonly LIB_CORE_REGEX_TYPE_FLOAT="([-+]?[0-9]*\.[0-9]+([eE][-+]?[0-9]+)?)"
+readonly LIB_CORE_REGEX_TYPE_FLOAT_NEG="([-][0-9]*\.[0-9]*[1-9]([eE][-+]?[0-9]+)?)"
+readonly LIB_CORE_REGEX_TYPE_FLOAT_NEG0="([-][0-9]*\.[0-9]+([eE][-+]?[0-9]+)?)"
+readonly LIB_CORE_REGEX_TYPE_FLOAT_POS="([+]?[0-9]*\.[0-9]*[1-9]([eE][-+]?[0-9]+)?)"
+readonly LIB_CORE_REGEX_TYPE_FLOAT_POS0="([+]?[0-9]*\.[0-9]+([eE][-+]?[0-9]+)?)"
+
+readonly LIB_CORE_REGEX_TYPE_HEX="[0-9A-Fa-f]+"
+readonly LIB_CORE_REGEX_TYPE_INTEGER="([-+]?(0|[1-9][0-9]*))"
+readonly LIB_CORE_REGEX_TYPE_INTEGER_NEG="([-][1-9][0-9]*)"
+readonly LIB_CORE_REGEX_TYPE_INTEGER_NEG0="(([-+]?0)|${LIB_CORE_REGEX_TYPE_INTEGER_NEG})"
+readonly LIB_CORE_REGEX_TYPE_INTEGER_POS="([+]?[1-9][0-9]*)"
+readonly LIB_CORE_REGEX_TYPE_INTEGER_POS0="(([-+]?0)|${LIB_CORE_REGEX_TYPE_INTEGER_POS})"
+readonly LIB_CORE_REGEX_TYPE_NUM_DEC="${LIB_CORE_REGEX_TYPE_INTEGER}|${LIB_CORE_REGEX_TYPE_FLOAT}"
+readonly LIB_CORE_REGEX_TYPE_NUM_DEC_NEG="${LIB_CORE_REGEX_TYPE_INTEGER_NEG}|${LIB_CORE_REGEX_TYPE_FLOAT_NEG}"
+readonly LIB_CORE_REGEX_TYPE_NUM_DEC_NEG0="${LIB_CORE_REGEX_TYPE_INTEGER_NEG0}|${LIB_CORE_REGEX_TYPE_FLOAT_NEG0}"
+readonly LIB_CORE_REGEX_TYPE_NUM_DEC_POS="${LIB_CORE_REGEX_TYPE_INTEGER_POS}|${LIB_CORE_REGEX_TYPE_FLOAT_POS}"
+readonly LIB_CORE_REGEX_TYPE_NUM_DEC_POS0="${LIB_CORE_REGEX_TYPE_INTEGER_POS0}|${LIB_CORE_REGEX_TYPE_FLOAT_POS0}"
+readonly LIB_CORE_REGEX_TYPE_OID="[0-2]((\.0)|(\.[1-9][0-9]*))*" # Adapted from: https://regexr.com/38m0v
+readonly LIB_CORE_REGEX_TYPE_UUID="(${LIB_CORE_REGEX_TYPE_HEX}{8}(-${LIB_CORE_REGEX_TYPE_HEX}{4}){3}-${LIB_CORE_REGEX_TYPE_HEX}{12})"
+readonly LIB_CORE_REGEX_TYPE_YESNO="yes|no"
+
+readonly LIB_CORE_REGEX_TYPE_YY_DE="J|j"
+readonly LIB_CORE_REGEX_TYPE_YY_EN="Y|y"
+readonly LIB_CORE_REGEX_TYPE_NN_DE="N|n"
+readonly LIB_CORE_REGEX_TYPE_NN_EN="N|n"
+
+#-------------------------------------------------------------------------------
+#  CUPS
+#-------------------------------------------------------------------------------
+readonly LIB_CORE_REGEX_CUPS_HOSTPORT="((${LIB_CORE_REGEX_NET_IPV4_ADDR}|${LIB_CORE_REGEX_NET_DNS_FQDN_SEG}|${LIB_CORE_REGEX_NET_DNS_FQDN})(:${LIB_CORE_REGEX_NET_TCPUDP_PORT}){0,1})"
+readonly LIB_CORE_REGEX_CUPS_QUEUE="([a-zA-Z0-9_%-]{1,})"
+
+# See also: https://www.cups.org/doc/network.html
+readonly LIB_CORE_REGEX_CUPS_DEVURI_DNSSD_ADDR="([a-zA-Z0-9]([a-zA-Z0-9_%-]{0,61}[a-zA-Z0-9]){0,1}\._(ipp|ipps|pdl-datastream|printer)\._tcp\.(local|${LIB_CORE_REGEX_NET_DNS_FQDN}))"
+readonly LIB_CORE_REGEX_CUPS_DEVURI_DNSSD="(dnssd:\/\/${LIB_CORE_REGEX_CUPS_DEVURI_DNSSD_ADDR}\/(cups){0,1}\?uuid\=${LIB_CORE_REGEX_TYPE_UUID})"
+
+# See also: https://www.cups.org/doc/network.html#IPP
+readonly LIB_CORE_REGEX_CUPS_DEVURI_IPP_OPTS="((contimeout\=[0-9]{1,})|(encryption\=(always|ifrequested|never|required))|(version\=(1\.0|1\.1|2\.1))|(waitjob\=false)|(waitprinter\=false))"
+readonly LIB_CORE_REGEX_CUPS_DEVURI_IPP_PATH="((ipp\/print)|(printers\/${LIB_CORE_REGEX_CUPS_QUEUE}(\/.printer){0,1}))"
+readonly LIB_CORE_REGEX_CUPS_DEVURI_IPP_PROTO="(http|ipp|ipps)"
+readonly LIB_CORE_REGEX_CUPS_DEVURI_IPP_IPP="(${LIB_CORE_REGEX_CUPS_DEVURI_IPP_PROTO}:\/\/${LIB_CORE_REGEX_CUPS_HOSTPORT}\/${LIB_CORE_REGEX_CUPS_DEVURI_IPP_PATH}(\?${LIB_CORE_REGEX_CUPS_DEVURI_IPP_OPTS}(\&${LIB_CORE_REGEX_CUPS_DEVURI_IPP_OPTS})*){0,1})"
+
+# See also: https://wiki.debian.org/CUPSPrintQueues#The_device-uri_for_a_Networked_Printer
+readonly LIB_CORE_REGEX_CUPS_DEVURI_IPP_DNSSD="(${LIB_CORE_REGEX_CUPS_DEVURI_IPP_PROTO}:\/\/${LIB_CORE_REGEX_CUPS_DEVURI_DNSSD_ADDR}\/)"
+
+# See also: https://www.cups.org/doc/network.html#TABLE3
+#           https://opensource.apple.com/source/cups/cups-136/cups/doc/help/network.html#TABLE3
+readonly LIB_CORE_REGEX_CUPS_DEVURI_LPD_OPTS="((banner\=on)|(contimeout\=[0-9]{1,})|(format\=(c|d|f|g|l|n|o|p|r|t|v))|(mode\=stream)|(order\=data\,control)|(reserve\=(none|rfc1179))|(sanitize_title\=(no|yes))|(timeout\=[0-9]{1,}))"
+readonly LIB_CORE_REGEX_CUPS_DEVURI_LPD="(lpd:\/\/${LIB_CORE_REGEX_CUPS_HOSTPORT}\/${LIB_CORE_REGEX_CUPS_QUEUE}(\?${LIB_CORE_REGEX_CUPS_DEVURI_LPD_OPTS}(\&${LIB_CORE_REGEX_CUPS_DEVURI_LPD_OPTS})*){0,1})"
+
+# See also: https://opensource.apple.com/source/cups/cups-86/doc/sdd.shtml
+readonly LIB_CORE_REGEX_CUPS_DEVURI_PARALLEL="(parallel:\/dev(\/[a-zA-Z0-9_-]{1,}){1,})"
+
+# See also: https://opensource.apple.com/source/cups/cups-86/doc/sdd.shtml
+#           https://www.cups.org/doc/spec-ipp.html
+readonly LIB_CORE_REGEX_CUPS_DEVURI_SERIAL_OPTS="((baud\=[0-9]{1,})|(bits\=(7|8))|(parity\=(even|odd|none))|(flow\=(dtrdsr|hard|none|rtscts|xonxoff)))"
+readonly LIB_CORE_REGEX_CUPS_DEVURI_SERIAL="(serial:\/dev(\/[a-zA-Z0-9_-]{1,}){1,}\?${LIB_CORE_REGEX_CUPS_DEVURI_SERIAL_OPTS}(\+${LIB_CORE_REGEX_CUPS_DEVURI_SERIAL_OPTS})*)"
+
+# See also: https://www.cups.org/doc/network.html
+readonly LIB_CORE_REGEX_CUPS_DEVURI_SOCKET_OPTS="((contimeout\=[0-9]{1,})|(waiteof\=(true|false)))"
+readonly LIB_CORE_REGEX_CUPS_DEVURI_SOCKET="(socket:\/\/${LIB_CORE_REGEX_CUPS_HOSTPORT}(\/\?${LIB_CORE_REGEX_CUPS_DEVURI_SOCKET_OPTS}(\&${LIB_CORE_REGEX_CUPS_DEVURI_SOCKET_OPTS})*){0,1})"
+
+# See also: https://wiki.debian.org/CUPSPrintQueues#deviceuri
+readonly LIB_CORE_REGEX_CUPS_DEVURI_USB_OPTS="([a-zA-Z0-9_]{1,}\=[a-zA-Z0-9_]{1,})"
+readonly LIB_CORE_REGEX_CUPS_DEVURI_USB="(usb:\/\/[a-zA-Z0-9]{1,}(\/${LIB_CORE_REGEX_CUPS_QUEUE}){1,}(\?${LIB_CORE_REGEX_CUPS_DEVURI_USB_OPTS}(\&${LIB_CORE_REGEX_CUPS_DEVURI_USB_OPTS})*){0,1})"
+
+readonly LIB_CORE_REGEX_CUPS_DEVURI="${LIB_CORE_REGEX_CUPS_DEVURI_DNSSD}|${LIB_CORE_REGEX_CUPS_DEVURI_IPP_IPP}|${LIB_CORE_REGEX_CUPS_DEVURI_IPP_DNSSD}|${LIB_CORE_REGEX_CUPS_DEVURI_LPD}|${LIB_CORE_REGEX_CUPS_DEVURI_PARALLEL}|${LIB_CORE_REGEX_CUPS_DEVURI_SERIAL}|${LIB_CORE_REGEX_CUPS_DEVURI_SOCKET}|${LIB_CORE_REGEX_CUPS_DEVURI_USB}"
+
+#-------------------------------------------------------------------------------
+#  OpenSC
+#-------------------------------------------------------------------------------
+# See also 'man pkcs15-init' ('--profile')
+readonly LIB_CORE_REGEX_OPENSC_P15_PROFILE="[a-zA-Z_0-9]+(\+[a-zA-Z_0-9]+)*"
+
+#-------------------------------------------------------------------------------
+#  POSIX
+#-------------------------------------------------------------------------------
+# See also: https://stackoverflow.com/a/2821183
+readonly LIB_CORE_REGEX_POSIX_NAME="[a-zA-Z_][a-zA-Z_0-9]*"
+
+# See also: https://www.ibm.com/docs/en/zos/2.1.0?topic=locales-posix-portable-file-name-character-set
+readonly LIB_CORE_REGEX_POSIX_FILENAME="[A-Za-z0-9._-]+"
+
+#===============================================================================
 #  FUNCTIONS
 #===============================================================================
 #===  FUNCTION  ================================================================
@@ -951,214 +1108,60 @@ lib_core_regex() {
   local arg_str="$2"
 
   #-----------------------------------------------------------------------------
-  #  NETWORK (DNS)
-  #-----------------------------------------------------------------------------
-  local R_NET_DNS_FQDN_TLD="[a-zA-Z-]{2,}" # top-level domain
-
-  # Adapted from: R. Sabourin, http://regexlib.com/REDetails.aspx?regexp_id=391
-  local R_NET_DNS_FQDN_SEG="[a-zA-Z0-9]([a-zA-Z0-9-]{0,61}[a-zA-Z0-9]){0,1}"
-  local R_NET_DNS_FQDN="((${R_NET_DNS_FQDN_SEG})\.){1,}(${R_NET_DNS_FQDN_TLD})"
-  local R_NET_DNS_FQDN_OR_WILDCARD="(\*\.){0,1}(${R_NET_DNS_FQDN})"
-  local R_NET_DNS_FQDN_WILDCARD="\*\.(${R_NET_DNS_FQDN})"
-  local R_NET_DNS_SRV="_(${R_NET_DNS_FQDN_SEG})\._(TCP|tcp|UDP|udp)\.(${R_NET_DNS_FQDN})\.{0,1}"
-
-  #-----------------------------------------------------------------------------
-  #  NETWORK (IPv4)
-  #-----------------------------------------------------------------------------
-  # Adapted from: J. Goyvaerts, S. Levithan, https://www.oreilly.com/library/view/regular-expressions-cookbook/9780596802837/ch07s16.html
-  local R_NET_IPV4_ADDR_SEG="25[0-5]|2[0-4][0-9]|[01]{0,1}[0-9][0-9]{0,1}"
-  local R_NET_IPV4_ADDR="((${R_NET_IPV4_ADDR_SEG})\.){3,3}(${R_NET_IPV4_ADDR_SEG})"
-  local R_NET_IPV4_CIDR="(${R_NET_IPV4_ADDR})\/(3[0-2]|[1-2][0-9]|[0-9])"
-  local R_NET_IPV4_RANGE="(${R_NET_IPV4_ADDR})-(${R_NET_IPV4_ADDR})"
-
-  #-----------------------------------------------------------------------------
-  #  NETWORK (IPv6)
-  #-----------------------------------------------------------------------------
-  # Adapted from: S. Ryan, https://community.helpsystems.com/forums/intermapper/miscellaneous-topics/5acc4fcf-fa83-e511-80cf-0050568460e4
-  local R_NET_IPV6_ADDR="((([0-9A-Fa-f]{1,4}:){7}([0-9A-Fa-f]{1,4}|:))|(([0-9A-Fa-f]{1,4}:){6}(:[0-9A-Fa-f]{1,4}|((25[0-5]|2[0-4][[:digit:]]|1[[:digit:]][[:digit:]]|[1-9]{0,1}[[:digit:]])(\.(25[0-5]|2[0-4][[:digit:]]|1[[:digit:]][[:digit:]]|[1-9]{0,1}[[:digit:]])){3})|:))|(([0-9A-Fa-f]{1,4}:){5}(((:[0-9A-Fa-f]{1,4}){1,2})|:((25[0-5]|2[0-4][[:digit:]]|1[[:digit:]][[:digit:]]|[1-9]{0,1}[[:digit:]])(\.(25[0-5]|2[0-4][[:digit:]]|1[[:digit:]][[:digit:]]|[1-9]{0,1}[[:digit:]])){3})|:))|(([0-9A-Fa-f]{1,4}:){4}(((:[0-9A-Fa-f]{1,4}){1,3})|((:[0-9A-Fa-f]{1,4}){0,1}:((25[0-5]|2[0-4][[:digit:]]|1[[:digit:]][[:digit:]]|[1-9]{0,1}[[:digit:]])(\.(25[0-5]|2[0-4][[:digit:]]|1[[:digit:]][[:digit:]]|[1-9]{0,1}[[:digit:]])){3}))|:))|(([0-9A-Fa-f]{1,4}:){3}(((:[0-9A-Fa-f]{1,4}){1,4})|((:[0-9A-Fa-f]{1,4}){0,2}:((25[0-5]|2[0-4][[:digit:]]|1[[:digit:]][[:digit:]]|[1-9]{0,1}[[:digit:]])(\.(25[0-5]|2[0-4][[:digit:]]|1[[:digit:]][[:digit:]]|[1-9]{0,1}[[:digit:]])){3}))|:))|(([0-9A-Fa-f]{1,4}:){2}(((:[0-9A-Fa-f]{1,4}){1,5})|((:[0-9A-Fa-f]{1,4}){0,3}:((25[0-5]|2[0-4][[:digit:]]|1[[:digit:]][[:digit:]]|[1-9]{0,1}[[:digit:]])(\.(25[0-5]|2[0-4][[:digit:]]|1[[:digit:]][[:digit:]]|[1-9]{0,1}[[:digit:]])){3}))|:))|(([0-9A-Fa-f]{1,4}:){1}(((:[0-9A-Fa-f]{1,4}){1,6})|((:[0-9A-Fa-f]{1,4}){0,4}:((25[0-5]|2[0-4][[:digit:]]|1[[:digit:]][[:digit:]]|[1-9]{0,1}[[:digit:]])(\.(25[0-5]|2[0-4][[:digit:]]|1[[:digit:]][[:digit:]]|[1-9]{0,1}[[:digit:]])){3}))|:))|(:(((:[0-9A-Fa-f]{1,4}){1,7})|((:[0-9A-Fa-f]{1,4}){0,5}:((25[0-5]|2[0-4][[:digit:]]|1[[:digit:]][[:digit:]]|[1-9]{0,1}[[:digit:]])(\.(25[0-5]|2[0-4][[:digit:]]|1[[:digit:]][[:digit:]]|[1-9]{0,1}[[:digit:]])){3}))|:)))(%.{1,}){0,1}"
-  local R_NET_IPV6_CIDR="(${R_NET_IPV6_ADDR})\/(12[0-8]|1[0-1][0-9]|[1-9][0-9]|[0-9])"
-
-  #-----------------------------------------------------------------------------
-  #  NETWORK (FQDN/IPv4/IPv6)
-  #-----------------------------------------------------------------------------
-  local R_NET_HOST="${R_NET_DNS_FQDN}|${R_NET_IPV4_ADDR}|${R_NET_IPV6_ADDR}"
-
-  #-----------------------------------------------------------------------------
-  #  NETWORK (MAC)
-  #-----------------------------------------------------------------------------
-  # Adapted from: T. Rudyk, http://regexlib.com/REDetails.aspx?regexp_id=154
-  local R_NET_MAC="([0-9a-fA-F][0-9a-fA-F]:){5}([0-9a-fA-F][0-9a-fA-F])"
-
-  #-----------------------------------------------------------------------------
-  #  NETWORK (ICMP/TCP/UDP)
-  #-----------------------------------------------------------------------------
-  local R_NET_ICMP_TYPE="[0-9]{1,2}|1[0-9]{2}|2[0-4][0-9]|25[0-5]|ping"
-
-  # Adapted from: A. Gusarov, http://regexlib.com/REDetails.aspx?regexp_id=4958
-  local R_NET_TCPUDP_PORT="([1-9][0-9]{0,3}|[1-5][0-9]{4}|6[0-4][0-9]{3}|65[0-4][0-9]{2}|655[0-2][0-9]|6553[0-5])"
-  local R_NET_TCPUDP_PORT_RANGE="${R_NET_TCPUDP_PORT}-${R_NET_TCPUDP_PORT}"
-
-  #-----------------------------------------------------------------------------
-  #  IPSET
-  #-----------------------------------------------------------------------------
-  local R_IPSET_IPADDR_4="(${R_NET_IPV4_ADDR})|(${R_NET_IPV4_CIDR})|(${R_NET_IPV4_RANGE})"
-  local R_IPSET_IPADDR_6="(${R_NET_IPV6_ADDR})|(${R_NET_IPV6_CIDR})"
-  local R_IPSET_PORT_BITMAP="(${R_NET_TCPUDP_PORT}(-${R_NET_TCPUDP_PORT}){0,1})"
-  local R_IPSET_PORT_HASH_4_6="((tcp|sctp|udp|udplite|tcpudp):${R_IPSET_PORT_BITMAP})"
-  local R_IPSET_PORT_HASH_4="${R_IPSET_PORT_HASH_4_6}|(icmp:${R_NET_ICMP_TYPE})"
-  local R_IPSET_PORT_HASH_6="${R_IPSET_PORT_HASH_4_6}|(icmpv6:${R_NET_ICMP_TYPE})"
-  local R_IPSET_SETNAME="[a-zA-Z0-9]([a-zA-Z0-9_]{0,1}[a-zA-Z0-9])*"
-
-  #-----------------------------------------------------------------------------
-  #  LUKS2
-  #-----------------------------------------------------------------------------
-  # See also: https://man7.org/linux/man-pages/man1/systemd-cryptenroll.1.html
-  local R_LUKS2_TPM2_PCRS="(1?[0-9]|2[0-3])(\+(1?[0-9]|2[0-3]))*"
-
-  #-----------------------------------------------------------------------------
-  #  DATA TYPES
-  #-----------------------------------------------------------------------------
-  local R_TYPE_BOOLEAN="true|false"
-
-  # Adapted from: J. Goyvaerts, S. Levithan, https://www.oreilly.com/library/view/regular-expressions-cookbook/9781449327453/ch06s10.html
-  local R_TYPE_FLOAT="([-+]?[0-9]*\.[0-9]+([eE][-+]?[0-9]+)?)"
-  local R_TYPE_FLOAT_NEG="([-][0-9]*\.[0-9]*[1-9]([eE][-+]?[0-9]+)?)"
-  local R_TYPE_FLOAT_NEG0="([-][0-9]*\.[0-9]+([eE][-+]?[0-9]+)?)"
-  local R_TYPE_FLOAT_POS="([+]?[0-9]*\.[0-9]*[1-9]([eE][-+]?[0-9]+)?)"
-  local R_TYPE_FLOAT_POS0="([+]?[0-9]*\.[0-9]+([eE][-+]?[0-9]+)?)"
-
-  local R_TYPE_HEX="[0-9A-Fa-f]+"
-  local R_TYPE_INTEGER="([-+]?(0|[1-9][0-9]*))"
-  local R_TYPE_INTEGER_NEG="([-][1-9][0-9]*)"
-  local R_TYPE_INTEGER_NEG0="(([-+]?0)|${R_TYPE_INTEGER_NEG})"
-  local R_TYPE_INTEGER_POS="([+]?[1-9][0-9]*)"
-  local R_TYPE_INTEGER_POS0="(([-+]?0)|${R_TYPE_INTEGER_POS})"
-  local R_TYPE_NUM_DEC="${R_TYPE_INTEGER}|${R_TYPE_FLOAT}"
-  local R_TYPE_NUM_DEC_NEG="${R_TYPE_INTEGER_NEG}|${R_TYPE_FLOAT_NEG}"
-  local R_TYPE_NUM_DEC_NEG0="${R_TYPE_INTEGER_NEG0}|${R_TYPE_FLOAT_NEG0}"
-  local R_TYPE_NUM_DEC_POS="${R_TYPE_INTEGER_POS}|${R_TYPE_FLOAT_POS}"
-  local R_TYPE_NUM_DEC_POS0="${R_TYPE_INTEGER_POS0}|${R_TYPE_FLOAT_POS0}"
-  local R_TYPE_OID="[0-2]((\.0)|(\.[1-9][0-9]*))*" # Adapted from: https://regexr.com/38m0v
-  local R_TYPE_UUID="(${R_TYPE_HEX}{8}(-${R_TYPE_HEX}{4}){3}-${R_TYPE_HEX}{12})"
-  local R_TYPE_YESNO="yes|no"
-
-  local R_TYPE_YY_DE="J|j"
-  local R_TYPE_YY_EN="Y|y"
-  local R_TYPE_NN_DE="N|n"
-  local R_TYPE_NN_EN="N|n"
-
-  #-----------------------------------------------------------------------------
-  #  CUPS
-  #-----------------------------------------------------------------------------
-  local R_CUPS_HOSTPORT="((${R_NET_IPV4_ADDR}|${R_NET_DNS_FQDN_SEG}|${R_NET_DNS_FQDN})(:${R_NET_TCPUDP_PORT}){0,1})"
-  local R_CUPS_QUEUE="([a-zA-Z0-9_%-]{1,})"
-
-  # See also: https://www.cups.org/doc/network.html
-  local R_CUPS_DEVURI_DNSSD_ADDR="([a-zA-Z0-9]([a-zA-Z0-9_%-]{0,61}[a-zA-Z0-9]){0,1}\._(ipp|ipps|pdl-datastream|printer)\._tcp\.(local|${R_NET_DNS_FQDN}))"
-  local R_CUPS_DEVURI_DNSSD="(dnssd:\/\/${R_CUPS_DEVURI_DNSSD_ADDR}\/(cups){0,1}\?uuid\=${R_TYPE_UUID})"
-
-  # See also: https://www.cups.org/doc/network.html#IPP
-  local R_CUPS_DEVURI_IPP_OPTS="((contimeout\=[0-9]{1,})|(encryption\=(always|ifrequested|never|required))|(version\=(1\.0|1\.1|2\.1))|(waitjob\=false)|(waitprinter\=false))"
-  local R_CUPS_DEVURI_IPP_PATH="((ipp\/print)|(printers\/${R_CUPS_QUEUE}(\/.printer){0,1}))"
-  local R_CUPS_DEVURI_IPP_PROTO="(http|ipp|ipps)"
-  local R_CUPS_DEVURI_IPP_IPP="(${R_CUPS_DEVURI_IPP_PROTO}:\/\/${R_CUPS_HOSTPORT}\/${R_CUPS_DEVURI_IPP_PATH}(\?${R_CUPS_DEVURI_IPP_OPTS}(\&${R_CUPS_DEVURI_IPP_OPTS})*){0,1})"
-
-  # See also: https://wiki.debian.org/CUPSPrintQueues#The_device-uri_for_a_Networked_Printer
-  local R_CUPS_DEVURI_IPP_DNSSD="(${R_CUPS_DEVURI_IPP_PROTO}:\/\/${R_CUPS_DEVURI_DNSSD_ADDR}\/)"
-
-  # See also: https://www.cups.org/doc/network.html#TABLE3
-  #           https://opensource.apple.com/source/cups/cups-136/cups/doc/help/network.html#TABLE3
-  local R_CUPS_DEVURI_LPD_OPTS="((banner\=on)|(contimeout\=[0-9]{1,})|(format\=(c|d|f|g|l|n|o|p|r|t|v))|(mode\=stream)|(order\=data\,control)|(reserve\=(none|rfc1179))|(sanitize_title\=(no|yes))|(timeout\=[0-9]{1,}))"
-  local R_CUPS_DEVURI_LPD="(lpd:\/\/${R_CUPS_HOSTPORT}\/${R_CUPS_QUEUE}(\?${R_CUPS_DEVURI_LPD_OPTS}(\&${R_CUPS_DEVURI_LPD_OPTS})*){0,1})"
-
-  # See also: https://opensource.apple.com/source/cups/cups-86/doc/sdd.shtml
-  local R_CUPS_DEVURI_PARALLEL="(parallel:\/dev(\/[a-zA-Z0-9_-]{1,}){1,})"
-
-  # See also: https://opensource.apple.com/source/cups/cups-86/doc/sdd.shtml
-  #           https://www.cups.org/doc/spec-ipp.html
-  local R_CUPS_DEVURI_SERIAL_OPTS="((baud\=[0-9]{1,})|(bits\=(7|8))|(parity\=(even|odd|none))|(flow\=(dtrdsr|hard|none|rtscts|xonxoff)))"
-  local R_CUPS_DEVURI_SERIAL="(serial:\/dev(\/[a-zA-Z0-9_-]{1,}){1,}\?${R_CUPS_DEVURI_SERIAL_OPTS}(\+${R_CUPS_DEVURI_SERIAL_OPTS})*)"
-
-  # See also: https://www.cups.org/doc/network.html
-  local R_CUPS_DEVURI_SOCKET_OPTS="((contimeout\=[0-9]{1,})|(waiteof\=(true|false)))"
-  local R_CUPS_DEVURI_SOCKET="(socket:\/\/${R_CUPS_HOSTPORT}(\/\?${R_CUPS_DEVURI_SOCKET_OPTS}(\&${R_CUPS_DEVURI_SOCKET_OPTS})*){0,1})"
-
-  # See also: https://wiki.debian.org/CUPSPrintQueues#deviceuri
-  local R_CUPS_DEVURI_USB_OPTS="([a-zA-Z0-9_]{1,}\=[a-zA-Z0-9_]{1,})"
-  local R_CUPS_DEVURI_USB="(usb:\/\/[a-zA-Z0-9]{1,}(\/${R_CUPS_QUEUE}){1,}(\?${R_CUPS_DEVURI_USB_OPTS}(\&${R_CUPS_DEVURI_USB_OPTS})*){0,1})"
-
-  local R_CUPS_DEVURI="${R_CUPS_DEVURI_DNSSD}|${R_CUPS_DEVURI_IPP_IPP}|${R_CUPS_DEVURI_IPP_DNSSD}|${R_CUPS_DEVURI_LPD}|${R_CUPS_DEVURI_PARALLEL}|${R_CUPS_DEVURI_SERIAL}|${R_CUPS_DEVURI_SOCKET}|${R_CUPS_DEVURI_USB}"
-
-  #-----------------------------------------------------------------------------
-  #  OpenSC
-  #-----------------------------------------------------------------------------
-  # See also 'man pkcs15-init' ('--profile')
-  local R_OPENSC_P15_PROFILE="[a-zA-Z_0-9]+(\+[a-zA-Z_0-9]+)*"
-
-  #-----------------------------------------------------------------------------
-  #  POSIX
-  #-----------------------------------------------------------------------------
-  # See also: https://stackoverflow.com/a/2821183
-  local R_POSIX_NAME="[a-zA-Z_][a-zA-Z_0-9]*"
-
-  # See also: https://www.ibm.com/docs/en/zos/2.1.0?topic=locales-posix-portable-file-name-character-set
-  local R_POSIX_FILENAME="[A-Za-z0-9._-]+"
-
-  #-----------------------------------------------------------------------------
   #  SELECT REGEX
   #-----------------------------------------------------------------------------
   local regex=""
   case "${arg_option}" in
-    --bool|--boolean)     regex="${R_TYPE_BOOLEAN}"                 ;;
-    --cups-devuri)        regex="${R_CUPS_DEVURI}"                  ;;
-    --cups-queue)         regex="${R_CUPS_QUEUE}"                   ;;
-    --dns-srv)            regex="${R_NET_DNS_SRV}"                  ;;
-    --float)              regex="${R_TYPE_FLOAT}"                   ;;
-    --float-neg)          regex="${R_TYPE_FLOAT_NEG}"               ;;
-    --float-neg0)         regex="${R_TYPE_FLOAT_NEG0}"              ;;
-    --float-pos)          regex="${R_TYPE_FLOAT_POS}"               ;;
-    --float-pos0)         regex="${R_TYPE_FLOAT_POS0}"              ;;
-    --fqdn)               regex="${R_NET_DNS_FQDN}"                 ;;
-    --fqdn-or-wildcard)   regex="${R_NET_DNS_FQDN_OR_WILDCARD}"     ;;
-    --fqdn-wildcard)      regex="${R_NET_DNS_FQDN_WILDCARD}"        ;;
-    --hex)                regex="${R_TYPE_HEX}"                     ;;
-    --host)               regex="${R_NET_HOST}"                     ;;
-    --hostname)           regex="${R_NET_DNS_FQDN_SEG}"             ;;
-    --icmp)               regex="${R_NET_ICMP_TYPE}"                ;;
-    --int|--integer)      regex="${R_TYPE_INTEGER}"                 ;;
-    --int-neg)            regex="${R_TYPE_INTEGER_NEG}"             ;;
-    --int-neg0)           regex="${R_TYPE_INTEGER_NEG0}"            ;;
-    --int-pos)            regex="${R_TYPE_INTEGER_POS}"             ;;
-    --int-pos0)           regex="${R_TYPE_INTEGER_POS0}"            ;;
-    --ip4|--ipv4|--inet)  regex="${R_NET_IPV4_ADDR}"                ;;
-    --ip4-cidr)           regex="${R_NET_IPV4_CIDR}"                ;;
-    --ip4-range)          regex="${R_NET_IPV4_RANGE}"               ;;
-    --ip6|--ipv6|--inet6) regex="${R_NET_IPV6_ADDR}"                ;;
-    --ip6-cidr)           regex="${R_NET_IPV6_CIDR}"                ;;
-    --ipset-ip4)          regex="${R_IPSET_IPADDR_4}"               ;;
-    --ipset-ip6)          regex="${R_IPSET_IPADDR_6}"               ;;
-    --ipset-setname)      regex="${R_IPSET_SETNAME}"                ;;
-    --ipset-port-bitmap)  regex="${R_IPSET_PORT_BITMAP}"            ;;
-    --ipset-port-hash4)   regex="${R_IPSET_PORT_HASH_4}"            ;;
-    --ipset-port-hash6)   regex="${R_IPSET_PORT_HASH_6}"            ;;
-    --luks2-tpm2-pcrs)    regex="${R_LUKS2_TPM2_PCRS}"              ;;
-    --mac)                regex="${R_NET_MAC}"                      ;;
-    --num|--number)       regex="${R_TYPE_NUM_DEC}"                 ;;
-    --num-neg)            regex="${R_TYPE_NUM_DEC_NEG}"             ;;
-    --num-neg0)           regex="${R_TYPE_NUM_DEC_NEG0}"            ;;
-    --num-pos)            regex="${R_TYPE_NUM_DEC_POS}"             ;;
-    --num-pos0)           regex="${R_TYPE_NUM_DEC_POS0}"            ;;
-    --oid)                regex="${R_TYPE_OID}"                     ;;
-    --opensc-p15-profile) regex="${R_OPENSC_P15_PROFILE}"           ;;
-    --posix-name|--funcname|--varname) regex="${R_POSIX_NAME}"      ;;
-    --tcpudp|--port)      regex="${R_NET_TCPUDP_PORT}"              ;;
-    --tcpudp-range|--portrange) regex="${R_NET_TCPUDP_PORT_RANGE}"  ;;
-    --yesno)              regex="${R_TYPE_YESNO}"                   ;;
-    --Yy-${LIB_C_ID_L_DE}) regex="${R_TYPE_YY_DE}"                  ;;
-    --Yy-${LIB_C_ID_L_EN}) regex="${R_TYPE_YY_EN}"                  ;;
-    --Nn-${LIB_C_ID_L_DE}) regex="${R_TYPE_NN_DE}"                  ;;
-    --Nn-${LIB_C_ID_L_EN}) regex="${R_TYPE_NN_EN}"                  ;;
-    *)                     regex="${arg_option}"                    ;;
+    --bool|--boolean)     regex="${LIB_CORE_REGEX_TYPE_BOOLEAN}"              ;;
+    --cups-devuri)        regex="${LIB_CORE_REGEX_CUPS_DEVURI}"               ;;
+    --cups-queue)         regex="${LIB_CORE_REGEX_CUPS_QUEUE}"                ;;
+    --dns-srv)            regex="${LIB_CORE_REGEX_NET_DNS_SRV}"               ;;
+    --float)              regex="${LIB_CORE_REGEX_TYPE_FLOAT}"                ;;
+    --float-neg)          regex="${LIB_CORE_REGEX_TYPE_FLOAT_NEG}"            ;;
+    --float-neg0)         regex="${LIB_CORE_REGEX_TYPE_FLOAT_NEG0}"           ;;
+    --float-pos)          regex="${LIB_CORE_REGEX_TYPE_FLOAT_POS}"            ;;
+    --float-pos0)         regex="${LIB_CORE_REGEX_TYPE_FLOAT_POS0}"           ;;
+    --fqdn)               regex="${LIB_CORE_REGEX_NET_DNS_FQDN}"              ;;
+    --fqdn-or-wildcard)   regex="${LIB_CORE_REGEX_NET_DNS_FQDN_OR_WILDCARD}"  ;;
+    --fqdn-wildcard)      regex="${LIB_CORE_REGEX_NET_DNS_FQDN_WILDCARD}"     ;;
+    --hex)                regex="${LIB_CORE_REGEX_TYPE_HEX}"                  ;;
+    --host)               regex="${LIB_CORE_REGEX_NET_HOST}"                  ;;
+    --hostname)           regex="${LIB_CORE_REGEX_NET_DNS_FQDN_SEG}"          ;;
+    --icmp)               regex="${LIB_CORE_REGEX_NET_ICMP_TYPE}"             ;;
+    --int|--integer)      regex="${LIB_CORE_REGEX_TYPE_INTEGER}"              ;;
+    --int-neg)            regex="${LIB_CORE_REGEX_TYPE_INTEGER_NEG}"          ;;
+    --int-neg0)           regex="${LIB_CORE_REGEX_TYPE_INTEGER_NEG0}"         ;;
+    --int-pos)            regex="${LIB_CORE_REGEX_TYPE_INTEGER_POS}"          ;;
+    --int-pos0)           regex="${LIB_CORE_REGEX_TYPE_INTEGER_POS0}"         ;;
+    --ip4|--ipv4|--inet)  regex="${LIB_CORE_REGEX_NET_IPV4_ADDR}"             ;;
+    --ip4-cidr)           regex="${LIB_CORE_REGEX_NET_IPV4_CIDR}"             ;;
+    --ip4-range)          regex="${LIB_CORE_REGEX_NET_IPV4_RANGE}"            ;;
+    --ip6|--ipv6|--inet6) regex="${LIB_CORE_REGEX_NET_IPV6_ADDR}"             ;;
+    --ip6-cidr)           regex="${LIB_CORE_REGEX_NET_IPV6_CIDR}"             ;;
+    --ipset-ip4)          regex="${LIB_CORE_REGEX_IPSET_IPADDR_4}"            ;;
+    --ipset-ip6)          regex="${LIB_CORE_REGEX_IPSET_IPADDR_6}"            ;;
+    --ipset-setname)      regex="${LIB_CORE_REGEX_IPSET_SETNAME}"             ;;
+    --ipset-port-bitmap)  regex="${LIB_CORE_REGEX_IPSET_PORT_BITMAP}"         ;;
+    --ipset-port-hash4)   regex="${LIB_CORE_REGEX_IPSET_PORT_HASH_4}"         ;;
+    --ipset-port-hash6)   regex="${LIB_CORE_REGEX_IPSET_PORT_HASH_6}"         ;;
+    --luks2-tpm2-pcrs)    regex="${LIB_CORE_REGEX_LUKS2_TPM2_PCRS}"           ;;
+    --mac)                regex="${LIB_CORE_REGEX_NET_MAC}"                   ;;
+    --num|--number)       regex="${LIB_CORE_REGEX_TYPE_NUM_DEC}"              ;;
+    --num-neg)            regex="${LIB_CORE_REGEX_TYPE_NUM_DEC_NEG}"          ;;
+    --num-neg0)           regex="${LIB_CORE_REGEX_TYPE_NUM_DEC_NEG0}"         ;;
+    --num-pos)            regex="${LIB_CORE_REGEX_TYPE_NUM_DEC_POS}"          ;;
+    --num-pos0)           regex="${LIB_CORE_REGEX_TYPE_NUM_DEC_POS0}"         ;;
+    --oid)                regex="${LIB_CORE_REGEX_TYPE_OID}"                  ;;
+    --opensc-p15-profile) regex="${LIB_CORE_REGEX_OPENSC_P15_PROFILE}"        ;;
+    --posix-name|--funcname|--varname) regex="${LIB_CORE_REGEX_POSIX_NAME}"   ;;
+    --tcpudp|--port)      regex="${LIB_CORE_REGEX_NET_TCPUDP_PORT}"           ;;
+    --tcpudp-range|--portrange) regex="${LIB_CORE_REGEX_NET_TCPUDP_PORT_RANGE}"  ;;
+    --yesno)              regex="${LIB_CORE_REGEX_TYPE_YESNO}"                ;;
+    --Yy-${LIB_C_ID_L_DE}) regex="${LIB_CORE_REGEX_TYPE_YY_DE}"               ;;
+    --Yy-${LIB_C_ID_L_EN}) regex="${LIB_CORE_REGEX_TYPE_YY_EN}"               ;;
+    --Nn-${LIB_C_ID_L_DE}) regex="${LIB_CORE_REGEX_TYPE_NN_DE}"               ;;
+    --Nn-${LIB_C_ID_L_EN}) regex="${LIB_CORE_REGEX_TYPE_NN_EN}"               ;;
+    *)                     regex="${arg_option}"                              ;;
   esac
 
   #-----------------------------------------------------------------------------
@@ -1642,7 +1645,7 @@ lib_core_time_timestamp() {
 #===  FUNCTION  ================================================================
 #         NAME:  lib_core_var_is
 #
-#  DESCRIPTION:  Perform general checks (defined, null, etc.) and 
+#  DESCRIPTION:  Perform general checks (defined, null, etc.) and
 #                type checks (bool, file, integer, etc.) on variables
 #
 #                (I)  Variable Checks (defined, null, etc.)
