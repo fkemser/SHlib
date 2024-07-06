@@ -311,7 +311,8 @@ Function | Description
 `lib_core_str_remove_leading` | Remove leading character(s) from one or multiple string(s)
 `lib_core_str_remove_newline` | Replace line breaks from a string by a certain character
 `lib_core_str_remove_trailing` | Remove trailing character(s) from one or multiple string(s)
-`lib_core_str_replace_char` | Replace (or delete) all occurrences of a certain character in a string
+`lib_core_str_replace_char` | Replace (or delete) all occurrences of a character in a string by using `tr` command.
+`lib_core_str_replace_substr` | Replace (or delete) all occurrences of a substring in a string by using `sed` command.
 `lib_core_str_split` | Split a given string into substrings (separated by `<newline>`) but preserve quoted (`"..."`) substrings even if they contain spaces
 `lib_core_str_to` | Convert one or multiple string(s)
 `lib_core_sudo` | Execute one or more commands with root privileges

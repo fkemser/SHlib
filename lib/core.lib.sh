@@ -1268,7 +1268,7 @@ lib_core_str_is_multiline() {
 #                  - as a range, e.g. 'a-zA-Z0-9', or
 #                  - as a class, e.g. '[:alnum:]'
 #                See also:
-#                  https://pubs.opengroup.org/onlinepubs/009695299/utilities/tr.html
+#                  https://pubs.opengroup.org/onlinepubs/9699919799/utilities/tr.html
 #      OUTPUTS:  Print random string to <stdout>
 #
 #      SOURCES:  Adapted from
@@ -1305,8 +1305,8 @@ __lib_core_str_random() {
 #      OUTPUTS:  Trimmed string(s) separated by <newline> to <stdout>
 #
 #      SOURCES:  https://mywiki.wooledge.org/BashFAQ/067
-#                https://pubs.opengroup.org/onlinepubs/009604499/utilities/xcu_chap02.html
-#                https://pubs.opengroup.org/onlinepubs/009604499/utilities/xcu_chap02.html#tag_02_13
+#                https://pubs.opengroup.org/onlinepubs/9699919799/utilities/V3_chap02.html
+#                https://pubs.opengroup.org/onlinepubs/9699919799/utilities/V3_chap02.html#tag_18_13
 #===============================================================================
 lib_core_str_remove_leading() {
   lib_core_args_passed "$@" || return
@@ -1386,8 +1386,8 @@ lib_core_str_remove_newline() {
 #      OUTPUTS:  Trimmed string(s) separated by <newline> to <stdout>
 #
 #      SOURCES:  https://mywiki.wooledge.org/BashFAQ/067
-#                https://pubs.opengroup.org/onlinepubs/009604499/utilities/xcu_chap02.html
-#                https://pubs.opengroup.org/onlinepubs/009604499/utilities/xcu_chap02.html#tag_02_13
+#                https://pubs.opengroup.org/onlinepubs/9699919799/utilities/V3_chap02.html
+#                https://pubs.opengroup.org/onlinepubs/9699919799/utilities/V3_chap02.html#tag_18_13
 #===============================================================================
 lib_core_str_remove_trailing() {
   lib_core_args_passed "$@" || return
@@ -1414,10 +1414,15 @@ lib_core_str_remove_trailing_spaces() {
 
 #===  FUNCTION  ================================================================
 #         NAME:  lib_core_str_replace_char
-#  DESCRIPTION:  Replace (or delete) all occurences of a certain character
-#                in a string
+#  DESCRIPTION:  Replace (or delete) all occurrences of one or multiple
+#                characters in a string by using 'tr' command
 # PARAMETER  1:  String to modify
-#            2:  Character to replace or delete
+#            2:  Character(s) to replace or delete, specified either as a
+#                  - single character, e.g. 'a',
+#                  - range, e.g. 'a-zA-Z0-9', or
+#                  - character class, e.g. '[:alnum:]'.
+#                See also:
+#                  https://pubs.opengroup.org/onlinepubs/9699919799/utilities/tr.html
 #            3:  (Optional) Replacement character - if not defined
 #                then the character defined in parameter <2> just gets removed
 #      OUTPUTS:  Modified string to <stdout>
@@ -1427,14 +1432,44 @@ lib_core_str_replace_char() {
   local arg_char_old="$2"
   local arg_char_new="$3"
 
-  [ "${#arg_char_old}" -eq "1" ] || \
-  return
-
   printf "%s" "${arg_string}" | case "${#arg_char_new}" in
     0) tr -d "${arg_char_old}" ;;
-    1) tr "${arg_char_old}" "${arg_char_new}" ;;
-    *) return 1 ;;
+    *) tr "${arg_char_old}" "${arg_char_new}" ;;
   esac
+}
+
+#===  FUNCTION  ================================================================
+#         NAME:  lib_core_str_replace_substr
+#
+#  DESCRIPTION:  Replace (or delete) all occurrences of a substring by using
+#                'sed' command. See also:
+#                  https://pubs.opengroup.org/onlinepubs/9699919799/utilities/sed.html
+#
+# PARAMETER  1:  String to modify
+#
+#            2:  Substring to replace or delete, as a basic regular expression
+#                (BRE). The following characters must be escaped with '\':
+#                  . [ \ * ^ $ /
+#                See also: 
+#                  https://pubs.opengroup.org/onlinepubs/9699919799/basedefs/V1_chap09.html#tag_09_03
+#
+#                You may use capture groups '\(...\)' to reuse matched
+#                substrings in parameter <3>.
+#
+#            3:  (Optional) Replacement substring - if not defined
+#                then the substring defined in parameter <2> just gets removed.
+#                In case you have defined capture groups '\(...\)' in
+#                parameter <2> you can insert them by using '\1' for the first
+#                capture group, '\2' for the second, ...
+#
+#      OUTPUTS:  Modified string to <stdout>
+#===============================================================================
+lib_core_str_replace_substr() {
+  local arg_str="$1"
+  local arg_substr_old="$2"
+  local arg_substr_new="$3"
+
+  printf "%s" "${arg_str}" | sed -e "s/${arg_substr_old}/${arg_substr_new}/g"
 }
 
 #===  FUNCTION  ================================================================
