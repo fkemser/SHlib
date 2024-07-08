@@ -452,12 +452,12 @@ lib_core_echo() {
 
 #===  FUNCTION  ================================================================
 #         NAME:  lib_core_env_append
-#  DESCRIPTION:  Append one or more values to an environmental variable
+#  DESCRIPTION:  Append one or more values to an environment variable
 # PARAMETER  1:  Variable to modify, e.g. 'PATH' (see 'case' statement below)
 #         2...:  Value(s) to append
 #   RETURNS  0:  All values successfully appended or already existing
 #            1:  Error: At least one value could not be appended
-#            2:  Error: Environmental variable not supported
+#            2:  Error: Environment variable not supported
 #         TODO:  At the moment only "$PATH" is supported
 #===============================================================================
 lib_core_env_append() {
@@ -492,12 +492,12 @@ lib_core_env_append() {
 
 #===  FUNCTION  ================================================================
 #         NAME:  lib_core_env_remove
-#  DESCRIPTION:  Remove one or more values from an environmental variable
+#  DESCRIPTION:  Remove one or more values from an environment variable
 # PARAMETER  1:  Variable to modify, e.g. 'PATH' (see 'case' statement below)
 #         2...:  Value(s) to remove
 #   RETURNS  0:  All Values successfully removed or not in variable
 #            1:  Error: At least one value could not be removed
-#            2:  Error: Environmental variable not supported
+#            2:  Error: Environment variable not supported
 #         TODO:  At the moment only "$PATH" is supported
 #===============================================================================
 lib_core_env_remove() {
@@ -781,7 +781,7 @@ lib_core_is() {
   local exitcode="0"
 
   #-----------------------------------------------------------------------------
-  #  (I) Environmental checks (function does not need/take further arguments)
+  #  (I) Environment checks (function does not need/take further arguments)
   #-----------------------------------------------------------------------------
   case "${arg_select}" in
     --interactive)
@@ -1006,17 +1006,17 @@ lib_core_msg() {
 
 #===  FUNCTION  ================================================================
 #         NAME:  lib_core_parse_credentials
-#  DESCRIPTION:  Parse credentials that are provided via an environmental
+#  DESCRIPTION:  Parse credentials that are provided via an environment
 #                variable
 # PARAMETER  1:  Credential, provided either
-#                 - via an environmental variable, in the form of 'ENV:<VAR>'
+#                 - via an environment variable, in the form of 'ENV:<VAR>'
 #                   (without '' <>) where <VAR> is the variable's name, or
 #                 - directly, in clear-text form (not recommended).
 #      OUTPUTS:  Credentials in clear-text form to <stdout>
 #   RETURNS  0:  OK
-#            1:  Error: An environmental variable was provided but the name
+#            1:  Error: An environment variable was provided but the name
 #                       is not POSIX compliant ([a-zA-Z_][a-zA-Z_0-9]*)
-#      EXAMPLE:  Via an environmental variable
+#      EXAMPLE:  Via an environment variable
 #                  > export mypwd="123456"
 #                  > lib_core_parse_credentials "ENV:mypwd"
 #                  >> 123456
@@ -1030,7 +1030,7 @@ lib_core_parse_credentials() {
   local str_cred
   case "${arg_input}" in
     ENV:*)
-      # Via an environmental variable (ENV:<VAR>)
+      # Via an environment variable (ENV:<VAR>)
       arg_input="${arg_input#"ENV:"}"
       if lib_core_is --posix-name "${arg_input}"; then
         eval str_cred=\"\$${arg_input}\"
@@ -1041,7 +1041,7 @@ lib_core_parse_credentials() {
       ;;
 
     env:*)
-      # Via an environmental variable (env:<VAR>)
+      # Via an environment variable (env:<VAR>)
       arg_input="${arg_input#"env:"}"
       if lib_core_is --posix-name "${arg_input}"; then
         eval str_cred=\"\$${arg_input}\"

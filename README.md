@@ -288,8 +288,8 @@ Function | Description
 `lib_core_cmd_exists` | Check if (one or more) commands exist on the host
 `lib_core_cmd_exists_su` | Check if (one or more) commands exist when using root
 `lib_core_echo` | Print a message
-`lib_core_env_append` | Append one or more values to an environmental variable
-`lib_core_env_remove` | Remove one or more values from an environmental variable
+`lib_core_env_append` | Append one or more values to an environment variable
+`lib_core_env_remove` | Remove one or more values from an environment variable
 `lib_core_expand_tilde` | Expand '~' to the user's home directory '$HOME' in a given path
 `lib_core_file_get` | Get file information
 `lib_core_file_touch` | Create one or more files and (if needed) their parent folders
@@ -300,7 +300,7 @@ Function | Description
 `lib_core_is` | Perform checks on current environment (root, interactive shell, etc.) and arguments (bool, file, integer, etc.)
 `lib_core_list_contains_str` | Looks for a string within a delimited list of strings
 `lib_core_list_contains_str_ptr` | Looks for a string within a delimited list of strings where the list does not(!) contain the strings themselves but their variable pointers
-`lib_core_parse_credentials` | Parse credentials that are provided via an environmental variable
+`lib_core_parse_credentials` | Parse credentials that are provided via an environment variable
 `lib_core_path_get_abs` | Get absolute path to a directory or file (in case it contains relative paths or symlinks)
 `lib_core_regex` | Check if a given string matches a regular expression
 `lib_core_str_get_length` | Get length of a string
