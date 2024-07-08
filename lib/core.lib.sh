@@ -1167,7 +1167,10 @@ lib_core_regex() {
   #-----------------------------------------------------------------------------
   #  PERFORM CHECK
   #-----------------------------------------------------------------------------
-  printf "%s" "${arg_str}" | grep -q -E "^(${regex})\$"
+  # Better 'echo' than 'printf', e.g. if <arg_str> is empty ('')
+  # and <regex> is '.*' the return value would be '1' with 'printf'
+  # printf "%s" "${arg_str}" | grep -q -E "^(${regex})\$"
+  echo "${arg_str}" | grep -q -E "^(${regex})\$"
 }
 
 #===  FUNCTION  ================================================================
@@ -1450,7 +1453,7 @@ lib_core_str_replace_char() {
 #            2:  Substring to replace or delete, as a basic regular expression
 #                (BRE). The following characters must be escaped with '\':
 #                  . [ \ * ^ $ /
-#                See also: 
+#                See also:
 #                  https://pubs.opengroup.org/onlinepubs/9699919799/basedefs/V1_chap09.html#tag_09_03
 #
 #                You may use capture groups '\(...\)' to reuse matched
