@@ -903,7 +903,7 @@ lib_core_test() {
 #         NAME:  lib_core_list_contains_str
 #  DESCRIPTION:  Looks for a string within a delimited list of strings
 # PARAMETER  1:  Search string
-#            2:  List of string pointers
+#            2:  List of strings
 #            3:  (Optional) List delimiter (default: ' ')
 #   RETURNS  0:  String in list
 #            1:  String not(!) in list
