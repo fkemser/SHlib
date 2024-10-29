@@ -1567,11 +1567,21 @@ lib_os_ssh_test() {
 
 #===  FUNCTION  ================================================================
 #         NAME:  lib_os_ssh_wrapper
+#
 #  DESCRIPTION:  !!! CAUTION - PLEASE USE THIS FUNCTION CAREFULLY !!!
 #                SSH command wrapper
-# PARAMETER  1:  SSH URI, e.g. username@host.fqdn
-#                (multiple URIs separated by space)
-#       2 ... :  Command(s) to execute, please make sure ...
+# PARAMETER
+#        1 ...:  (Optional) SSH command line option(s), see 'man ssh'
+#                (each option must be separately quoted) (*)
+#
+#          ...:  SSH URI(s) in the form of 'username@host.fqdn'
+#                (each URI must be separately quoted)
+#
+#          ...:  Command(s) to execute (*)
+#
+#           (*)  Please make sure ...
+#                 - to put a semicolon (;) behind each command,
+#                   see EXAMPLE section below
 #                 - to escape (\) the following characters when using them
 #                   " & | ; $ (escape $ only for remote variables)
 #                 - to use \; in for/if/while/... constructs, e.g.
@@ -1580,14 +1590,31 @@ lib_os_ssh_test() {
 #                     ...             \
 #                     (last command)  \;\
 #                   done
+# EXAMPLE
+#            1:  lib_os_ssh_wrapper "" "username@host.fqdn" "echo Test"
+#            2:  lib_os_ssh_wrapper "-i \"/path/with spaces/id_rsa\"" "username@host.fqdn" ""
+#            3:  lib_os_ssh_wrapper "" "username@host.fqdn" "echo \"Current date/time:\"; date"
 #===============================================================================
 lib_os_ssh_wrapper() {
-  local arg_ssh_uris="$1"
-  shift
+  local arg_ssh_params
+  while ! lib_core_is --ssh-uri-short "$1"; do
+    arg_ssh_params="${arg_ssh_params} $1"
+    shift
+  done
+
+  local arg_ssh_uris
+  while lib_core_is --ssh-uri-short "$1"; do
+    arg_ssh_uris="${arg_ssh_uris} $1"
+    shift
+  done
+
+  lib_core_is --cmd "ssh"                           && \
+  eval lib_core_is --ssh-uri-short ${arg_ssh_uris}  || \
+  return
 
   local ssh
   for ssh in ${arg_ssh_uris}; do
-    ssh "${ssh}" /bin/sh <<CMD
+    eval ssh ${arg_ssh_params} ${ssh} /bin/sh <<CMD
       $@
 CMD
   done
