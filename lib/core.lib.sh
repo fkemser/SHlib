@@ -1,6 +1,6 @@
 #!/bin/sh
 #
-# SPDX-FileCopyrightText: 2020-2024 Florian Kemser and the SHlib contributors
+# SPDX-FileCopyrightText: 2020-2025 Florian Kemser and the SHlib contributors
 # SPDX-License-Identifier: LGPL-3.0-or-later
 #
 #===============================================================================
@@ -1298,7 +1298,13 @@ lib_core_regex() {
     --Yy-${LIB_C_ID_L_EN}) regex="${LIB_CORE_REGEX_TYPE_YY_EN}"               ;;
     --Nn-${LIB_C_ID_L_DE}) regex="${LIB_CORE_REGEX_TYPE_NN_DE}"               ;;
     --Nn-${LIB_C_ID_L_EN}) regex="${LIB_CORE_REGEX_TYPE_NN_EN}"               ;;
-    *)                     regex="${arg_option}"                              ;;
+    *)
+      # Besides the predefined patterns you can also use your own one. Please
+      # note that the pattern must follow POSIX's extended regular expression
+      # (ERE) notation, see also:
+      #   https://pubs.opengroup.org/onlinepubs/9799919799/basedefs/V1_chap09.html#tag_09_04
+      regex="${arg_option}"
+      ;;
   esac
 
   #-----------------------------------------------------------------------------

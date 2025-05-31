@@ -54,7 +54,7 @@
 
 
 <!-- TABLE OF CONTENTS -->
-<details>
+<details open>
   <summary>Table of Contents</summary>
   <ol>
     <li>
@@ -65,19 +65,14 @@
       </ul>
     </li>
     <li>
-      <a href="#getting-started">Getting Started</a>
+      <a href="#prerequisites"><b>Prerequisites</b></a>
       <ul>
-        <li>
-          <a href="#prerequisites">Prerequisites</a>
-          <ul>
-            <li><a href="#debian">Debian</a></li>
-          </ul>
-        </li>
-        <li><a href="#installation">Installation</a></li>
+        <li><a href="#debian">Debian</a></li>
       </ul>
     </li>
+    <li><a href="#installation"><b>Installation</b></a></li>
     <li>
-      <a href="#documentation">Documentation</a>
+      <a href="#documentation"><b>Documentation</b></a>
       <ul>
         <li><a href="#clibsh">c.lib.sh</a></li>
         <li><a href="#corelibsh">core.lib.sh</a></li>

@@ -1,6 +1,6 @@
 #!/bin/sh
 #
-# SPDX-FileCopyrightText: 2020-2024 Florian Kemser and the SHlib contributors
+# SPDX-FileCopyrightText: 2020-2025 Florian Kemser and the SHlib contributors
 # SPDX-License-Identifier: LGPL-3.0-or-later
 #
 #===============================================================================
@@ -841,21 +841,23 @@ __lib_os_lib() {
   local result
   local var
   for var in "$@"; do
+    [ -n "$var" ]                                                           && \
+
     result="$(ldconfig -p | sed -ne                                             \
       "s/^[[:space:]]*${var}[[:space:]]\{1,\}.\{1,\}=>[[:space:]]*\(.*\)$/\1/p" \
-    )"
+    )"                                                                      && \
 
     # ldconfig only supports certain file name patterns, see 'man ldconfig'
     if lib_core_is --empty "${result}"; then
       result="$(find "/lib/" -name "${var}" | head -1)"
-    fi
+    fi                                                                      && \
 
-    lib_core_is --not-empty "${result}"                                       && \
+    lib_core_is --not-empty "${result}"                                     && \
 
     case "${arg_type}" in
       -d|--dir) __lib_core_file_get --dir "${result}" ;;
       -f|--file) printf "%s\n" "${result}" ;;
-    esac                                                                      || \
+    esac                                                                    || \
 
     { lib_core_msg --error "Library <${var}> not found."
       exitcode="1"
