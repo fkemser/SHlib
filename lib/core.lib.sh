@@ -627,7 +627,7 @@ lib_core_env_append() {
 #  DESCRIPTION:  Remove one or more values from an environment variable
 # PARAMETER  1:  Variable to modify, e.g. 'PATH' (see 'case' statement below)
 #         2...:  Value(s) to remove
-#   RETURNS  0:  All Values successfully removed or not in variable
+#   RETURNS  0:  All values successfully removed or not in variable
 #            1:  Error: At least one value could not be removed
 #            2:  Error: Environment variable not supported
 #         TODO:  At the moment only "$PATH" is supported
@@ -1032,8 +1032,85 @@ lib_core_test() {
 }
 
 #===  FUNCTION  ================================================================
+#         NAME:  lib_core_list
+#
+#  DESCRIPTION:  Add/Remove one or multiple string(s) from a list of strings or
+#                check if one or multiple string(s) are part of this list
+#
+# PARAMETER  1:  Action (--add|--contains|--remove)
+#            2:  List of strings
+#            3:  List delimiter (default: ' ')
+#         4...:  String(s) to append/check/remove
+#
+#      OUTPUTS:  Modified list to <stdout>
+#                (only if parameter <1> = '--add|--remove')
+#
+#   RETURNS  0:  Success: Depends on parameter <1> ...
+#                  --add        All strings successfully appended or already
+#                               existing
+#                  --contains   List contains all strings
+#                  --remove     All strings successfully removed or not
+#                               existing
+#
+#            1:  Error: Depends on parameter <1> ...
+#                  --contains   At least one string is not in the list
+#
+#            2:  Error: One or multiple parameters have invalid values
+#===============================================================================
+lib_core_list() {
+  local arg_select="$1"
+  local arg_list="$2"
+  local arg_delim="${3:- }"
+
+  lib_core_is --not-empty "${arg_select}" "${arg_list}" && \
+  [ "${#arg_delim}" -eq "1" ]                           || \
+  return 2
+
+  shift; shift; shift
+  lib_core_args_passed "$@" || return 2
+
+  local exitcode="0"
+  local list="${arg_list}"
+  local val
+  case "${arg_select}" in
+    --add|add)
+      # Add
+      for val in "$@"; do
+        if ! __lib_core_list_contains_str "${val}" "${list}" "${arg_delim}"; then
+          list="${list}${list:+${arg_delim}}${val}"
+        fi
+      done
+      printf "%s" "${list}"
+      ;;
+
+    --contains|contains)
+      # Check for presence
+      for val in "$@"; do
+        if ! __lib_core_list_contains_str "${val}" "${list}" "${arg_delim}"; then
+          return 1
+        fi
+      done
+      ;;
+
+    --remove|remove)
+      # Remove
+      for val in "$@"; do
+        if __lib_core_list_contains_str "${val}" "${list}" "${arg_delim}"; then
+          val="$(lib_core_str_escape_chars_sed "${val}")"             && \
+          list="$(printf "${arg_delim}%s${arg_delim}" "${list}"       \
+            | sed -e "s/${arg_delim}${val}${arg_delim}/${arg_delim}/" \
+            | sed -e "s/^${arg_delim}\(.*\)${arg_delim}$/\1/"         \
+          )"
+        fi
+      done
+      printf "%s" "${list}"
+      ;;
+  esac
+}
+
+#===  FUNCTION  ================================================================
 #         NAME:  lib_core_list_contains_str
-#  DESCRIPTION:  Looks for a string within a delimited list of strings
+#  DESCRIPTION:  Look for a string within a delimited list of strings
 # PARAMETER  1:  Search string
 #            2:  List of strings
 #            3:  (Optional) List delimiter (default: ' ')
@@ -1050,6 +1127,14 @@ lib_core_list_contains_str() {
   [ "${#arg_delim}" -eq "1" ]                         || \
   return 2
 
+  __lib_core_list_contains_str "$@"
+}
+
+__lib_core_list_contains_str() {
+  local arg_str="$1"
+  local arg_list="$2"
+  local arg_delim="${3:- }"
+
   local IFS="${arg_delim}"
 
   local val
@@ -1062,7 +1147,7 @@ lib_core_list_contains_str() {
 
 #===  FUNCTION  ================================================================
 #         NAME:  lib_core_list_contains_str_ptr
-#  DESCRIPTION:  Looks for a string within a delimited list of strings where
+#  DESCRIPTION:  Look for a string within a delimited list of strings where
 #                the list does not(!) contain the strings themselves but their
 #                variable pointers
 # PARAMETER  1:  Search string
@@ -1084,6 +1169,16 @@ lib_core_list_contains_str_ptr() {
   lib_core_is --not-empty "${arg_str}" "${arg_list}"  && \
   [ "${#arg_delim}" -eq "1" ]                         || \
   return 2
+
+  __lib_core_list_contains_str_ptr "$@"
+}
+
+__lib_core_list_contains_str_ptr() {
+  local arg_str="$1"
+  local arg_list="$2"
+  local arg_delim="${3:- }"
+  local arg_ptr_prefix="$4"
+  local arg_ptr_suffix="$5"
 
   local IFS="${arg_delim}"
 
@@ -1314,6 +1409,34 @@ lib_core_regex() {
   # and <regex> is '.*' the return value would be '1' with 'printf'
   # printf "%s" "${arg_str}" | grep -q -E "^(${regex})\$"
   echo "${arg_str}" | grep -q -E "^(${regex})\$"
+}
+
+#===  FUNCTION  ================================================================
+#            NAME:  lib_core_str_escape_chars_sed
+#     DESCRIPTION:  Escape ('\...') characters that are special to 'sed'
+# PARAMETER
+# <stdin> or 1...:  String(s) to modify
+#         OUTPUTS:  Modified string(s) separated by <newline> to <stdout>
+#         SOURCES:  Adapted from "https://unix.stackexchange.com/a/33005"
+#                   by "Gilles 'SO- stop being evil'" (https://unix.stackexchange.com/users/885/gilles-so-stop-being-evil)
+#                   licensed under "CC BY-SA 4.0" (https://creativecommons.org/licenses/by-sa/4.0/)
+#===============================================================================
+lib_core_str_escape_chars_sed() {
+  if [ $# -gt 0 ]; then
+    # Read from arguments
+    local var
+    for var in "$@"; do
+      printf '%s\n' "${var}"
+    done
+  else
+    # Read from <stdin>
+    while IFS= read -r line || [ -n "$line" ]; do
+      printf '%s\n' "${line}"
+    done
+  fi | \
+
+  # Escape characters special to sed: $ . * / \ ^ [ ]
+  sed -e 's/[$.*/\\^[]/\\&/g'
 }
 
 #===  FUNCTION  ================================================================

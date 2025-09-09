@@ -293,11 +293,13 @@ Function | Description
 `lib_core_int_max` | Return maximum of a list of integer values
 `lib_core_int_min` | Return minimum of a list of integer values
 `lib_core_is` | Perform checks on current environment (root, interactive shell, etc.) and arguments (bool, file, integer, etc.)
-`lib_core_list_contains_str` | Looks for a string within a delimited list of strings
-`lib_core_list_contains_str_ptr` | Looks for a string within a delimited list of strings where the list does not(!) contain the strings themselves but their variable pointers
+`lib_core_list` | Add/Remove one or multiple string(s) from a list of strings or check if one or multiple string(s) are part of this list
+`lib_core_list_contains_str` | Look for a string within a delimited list of strings
+`lib_core_list_contains_str_ptr` | Look for a string within a delimited list of strings where the list does not(!) contain the strings themselves but their variable pointers
 `lib_core_parse_credentials` | Parse credentials that are provided via an environment variable
 `lib_core_path_get_abs` | Get absolute path to a directory or file (in case it contains relative paths or symlinks)
 `lib_core_regex` | Check if a given string matches a regular expression
+`lib_core_str_escape_chars_sed` | Escape ('\...') characters that are special to 'sed' command
 `lib_core_str_get_length` | Get length of a string
 `lib_core_str_filter_and_sort` | Filter and sort a (multiline) string
 `lib_core_str_get_substr` | Extract a substring from a given string
