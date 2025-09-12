@@ -1035,14 +1035,14 @@ lib_core_test() {
 #         NAME:  lib_core_list
 #
 #  DESCRIPTION:  Add/Remove one or multiple string(s) from a list of strings or
-#                check if one or multiple string(s) are part of this list
+#                check if one or multiple string(s) are part of a list
 #
 # PARAMETER  1:  Action (--add|--contains|--remove)
-#            2:  List of strings
-#            3:  List delimiter (default: ' ')
+#            2:  List of strings (variable pointer) (must not be 'list')
+#            3:  List delimiter (must not be '"') (default: ' ')
 #         4...:  String(s) to append/check/remove
 #
-#      OUTPUTS:  Modified list to <stdout>
+#      OUTPUTS:  Store modified list in the variable defined in param <2>
 #                (only if parameter <1> = '--add|--remove')
 #
 #   RETURNS  0:  Success: Depends on parameter <1> ...
@@ -1062,15 +1062,22 @@ lib_core_list() {
   local arg_list="$2"
   local arg_delim="${3:- }"
 
-  lib_core_is --not-empty "${arg_select}" "${arg_list}" && \
-  [ "${#arg_delim}" -eq "1" ]                           || \
+  lib_core_is --not-empty "${arg_select}"       && \
+  case "${arg_list}" in
+    list) false ;;
+    *) lib_core_is --varname "${arg_list}" ;;
+  esac                                          && \
+  case "${arg_delim}" in
+    "\"") false ;;
+    *) [ "${#arg_delim}" -eq "1" ] ;;
+  esac                                          || \
   return 2
 
   shift; shift; shift
   lib_core_args_passed "$@" || return 2
 
   local exitcode="0"
-  local list="${arg_list}"
+  eval local list=\$${arg_list}
   local val
   case "${arg_select}" in
     --add|add)
@@ -1080,7 +1087,7 @@ lib_core_list() {
           list="${list}${list:+${arg_delim}}${val}"
         fi
       done
-      printf "%s" "${list}"
+      eval ${arg_list}=\"${list}\"
       ;;
 
     --contains|contains)
@@ -1103,7 +1110,12 @@ lib_core_list() {
           )"
         fi
       done
-      printf "%s" "${list}"
+      eval ${arg_list}=\"${list}\"
+      ;;
+
+    *)
+      # Unsupported action
+      return 2
       ;;
   esac
 }
