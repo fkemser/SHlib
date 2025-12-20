@@ -11,7 +11,6 @@
 #
 #  DESCRIPTION:   Shell library containing essential functions such as
 #                   - checking the existence of a command/directory/file,
-#                   - performing regular expression checks,
 #                   - converting and modifying variables,
 #                   - string manipulation.
 #
@@ -39,7 +38,7 @@ if lib_core 2>/dev/null; then return; fi
 #-------------------------------------------------------------------------------
 #  Load libraries
 #-------------------------------------------------------------------------------
-for lib in c; do
+for lib in c regex; do
   eval lib_$lib 2>/dev/null                                                 || \
   . "./$lib.lib.sh"                                                         || \
   {
@@ -55,295 +54,6 @@ done
 # Indicates if the parent shell (the shell that sources this library)
 # is a terminal ('true') or not ('false')
 LIB_CORE_PARENT_SHELL_IS_TERMINAL=""
-
-#===============================================================================
-#  REGULAR EXPRESSIONS (see lib_core_regex()>)
-#===============================================================================
-#-------------------------------------------------------------------------------
-#  RFC 2234
-#-------------------------------------------------------------------------------
-# See also: https://datatracker.ietf.org/doc/html/rfc2234
-readonly LIB_CORE_REGEX_RFC2234_ALPHA="([A-Za-z])"
-readonly LIB_CORE_REGEX_RFC2234_BIT="([01])"
-readonly LIB_CORE_REGEX_RFC2234_CHAR="([\x01-\x7F])"
-readonly LIB_CORE_REGEX_RFC2234_CR="([\r])"
-readonly LIB_CORE_REGEX_RFC2234_CRLF="([\r\n])"
-readonly LIB_CORE_REGEX_RFC2234_CTL="([\x00-\x1F\x7F])"
-readonly LIB_CORE_REGEX_RFC2234_DIGIT="([0-9])"
-readonly LIB_CORE_REGEX_RFC2234_DQUOTE="([\"])"
-readonly LIB_CORE_REGEX_RFC2234_HEXDIG="([0-9A-Fa-f])"
-readonly LIB_CORE_REGEX_RFC2234_HTAB="([\t])"
-readonly LIB_CORE_REGEX_RFC2234_LF="([\n])"
-readonly LIB_CORE_REGEX_RFC2234_LWSP="(([ \t]|([\r\n][ \t]))*)"
-readonly LIB_CORE_REGEX_RFC2234_OCTET="([\x00-\xFF])"
-readonly LIB_CORE_REGEX_RFC2234_SP="([ ])"
-readonly LIB_CORE_REGEX_RFC2234_VCHAR="([\x21-\x7E])"
-readonly LIB_CORE_REGEX_RFC2234_WSP="([ \t])"
-
-#-------------------------------------------------------------------------------
-#  RFC 3986
-#-------------------------------------------------------------------------------
-# See also: https://datatracker.ietf.org/doc/html/rfc3986
-readonly LIB_CORE_REGEX_RFC3986_SUB_DELIMS="([!$&'()*+,;=])"
-readonly LIB_CORE_REGEX_RFC3986_GEN_DELIMS="([:/?#@]|[][])"
-readonly LIB_CORE_REGEX_RFC3986_RESERVED="(${LIB_CORE_REGEX_RFC3986_GEN_DELIMS}|${LIB_CORE_REGEX_RFC3986_SUB_DELIMS})"
-readonly LIB_CORE_REGEX_RFC3986_UNRESERVED="(${LIB_CORE_REGEX_RFC2234_ALPHA}|${LIB_CORE_REGEX_RFC2234_DIGIT}|[._~-])"
-
-readonly LIB_CORE_REGEX_RFC3986_PCT_ENCODED="(%${LIB_CORE_REGEX_RFC2234_HEXDIG}{2})"
-
-readonly LIB_CORE_REGEX_RFC3986_PCHAR="(${LIB_CORE_REGEX_RFC3986_UNRESERVED}|${LIB_CORE_REGEX_RFC3986_PCT_ENCODED}|${LIB_CORE_REGEX_RFC3986_SUB_DELIMS}|[:@])"
-
-readonly LIB_CORE_REGEX_RFC3986_FRAGMENT="((${LIB_CORE_REGEX_RFC3986_PCHAR}|[/?])*)"
-
-readonly LIB_CORE_REGEX_RFC3986_QUERY="${LIB_CORE_REGEX_RFC3986_FRAGMENT}"
-
-readonly LIB_CORE_REGEX_RFC3986_SEGMENT_NZ_NC="((${LIB_CORE_REGEX_RFC3986_UNRESERVED}|${LIB_CORE_REGEX_RFC3986_PCT_ENCODED}|${LIB_CORE_REGEX_RFC3986_SUB_DELIMS}|@){1,})"
-readonly LIB_CORE_REGEX_RFC3986_SEGMENT_NZ="(${LIB_CORE_REGEX_RFC3986_PCHAR}{1,})"
-readonly LIB_CORE_REGEX_RFC3986_SEGMENT="(${LIB_CORE_REGEX_RFC3986_PCHAR}*)"
-
-readonly LIB_CORE_REGEX_RFC3986_PATH_EMPTY="()"
-readonly LIB_CORE_REGEX_RFC3986_PATH_ROOTLESS="(${LIB_CORE_REGEX_RFC3986_SEGMENT_NZ}(/${LIB_CORE_REGEX_RFC3986_SEGMENT})*)"
-readonly LIB_CORE_REGEX_RFC3986_PATH_NOSCHEME="(${LIB_CORE_REGEX_RFC3986_SEGMENT_NZ_NC}(/${LIB_CORE_REGEX_RFC3986_SEGMENT})*)"
-readonly LIB_CORE_REGEX_RFC3986_PATH_ABSOLUTE="(/(${LIB_CORE_REGEX_RFC3986_SEGMENT_NZ}(/${LIB_CORE_REGEX_RFC3986_SEGMENT})*){0,1})"
-readonly LIB_CORE_REGEX_RFC3986_PATH_ABEMPTY="(/${LIB_CORE_REGEX_RFC3986_SEGMENT})*"
-
-readonly LIB_CORE_REGEX_RFC3986_PATH="(${LIB_CORE_REGEX_RFC3986_PATH_ABEMPTY}|${LIB_CORE_REGEX_RFC3986_PATH_ABSOLUTE}|${LIB_CORE_REGEX_RFC3986_PATH_NOSCHEME}|${LIB_CORE_REGEX_RFC3986_PATH_ROOTLESS}|${LIB_CORE_REGEX_RFC3986_PATH_EMPTY})"
-
-readonly LIB_CORE_REGEX_RFC3986_REG_NAME="(${LIB_CORE_REGEX_RFC3986_UNRESERVED}|${LIB_CORE_REGEX_RFC3986_PCT_ENCODED}|${LIB_CORE_REGEX_RFC3986_SUB_DELIMS})*"
-
-readonly LIB_CORE_REGEX_RFC3986_DEC_OCTET="([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])"
-
-readonly LIB_CORE_REGEX_RFC3986_IPV4ADDRESS="((${LIB_CORE_REGEX_RFC3986_DEC_OCTET}\.){3}${LIB_CORE_REGEX_RFC3986_DEC_OCTET})"
-readonly LIB_CORE_REGEX_RFC3986_H16="(${LIB_CORE_REGEX_RFC2234_HEXDIG}{1,4})"
-readonly LIB_CORE_REGEX_RFC3986_LS32="((${LIB_CORE_REGEX_RFC3986_H16}:${LIB_CORE_REGEX_RFC3986_H16})|${LIB_CORE_REGEX_RFC3986_IPV4ADDRESS})"
-
-readonly LIB_CORE_REGEX_RFC3986_IPV6ADDRESS="(\
-((${LIB_CORE_REGEX_RFC3986_H16}:){6}${LIB_CORE_REGEX_RFC3986_LS32})|\
-(::(${LIB_CORE_REGEX_RFC3986_H16}:){5}${LIB_CORE_REGEX_RFC3986_LS32})|\
-((${LIB_CORE_REGEX_RFC3986_H16}){0,1}::(${LIB_CORE_REGEX_RFC3986_H16}:){4}${LIB_CORE_REGEX_RFC3986_LS32})|\
-(((${LIB_CORE_REGEX_RFC3986_H16}:){0,1}${LIB_CORE_REGEX_RFC3986_H16}){0,1}::(${LIB_CORE_REGEX_RFC3986_H16}:){3}${LIB_CORE_REGEX_RFC3986_LS32})|\
-(((${LIB_CORE_REGEX_RFC3986_H16}:){0,2}${LIB_CORE_REGEX_RFC3986_H16}){0,1}::(${LIB_CORE_REGEX_RFC3986_H16}:){2}${LIB_CORE_REGEX_RFC3986_LS32})|\
-(((${LIB_CORE_REGEX_RFC3986_H16}:){0,3}${LIB_CORE_REGEX_RFC3986_H16}){0,1}::${LIB_CORE_REGEX_RFC3986_H16}:${LIB_CORE_REGEX_RFC3986_LS32})|\
-(((${LIB_CORE_REGEX_RFC3986_H16}:){0,4}${LIB_CORE_REGEX_RFC3986_H16}){0,1}::${LIB_CORE_REGEX_RFC3986_LS32})|\
-(((${LIB_CORE_REGEX_RFC3986_H16}:){0,5}${LIB_CORE_REGEX_RFC3986_H16}){0,1}::${LIB_CORE_REGEX_RFC3986_H16})|\
-(((${LIB_CORE_REGEX_RFC3986_H16}:){0,6}${LIB_CORE_REGEX_RFC3986_H16}){0,1}::)\
-)"
-
-readonly LIB_CORE_REGEX_RFC3986_IPVFUTURE="(v${LIB_CORE_REGEX_RFC2234_HEXDIG}{1,}\.(${LIB_CORE_REGEX_RFC3986_UNRESERVED}|${LIB_CORE_REGEX_RFC3986_SUB_DELIMS}|:){1,})"
-
-readonly LIB_CORE_REGEX_RFC3986_IP_LITERAL="\[(${LIB_CORE_REGEX_RFC3986_IPV6ADDRESS}|${LIB_CORE_REGEX_RFC3986_IPVFUTURE})\]"
-
-readonly LIB_CORE_REGEX_RFC3986_PORT="(${LIB_CORE_REGEX_RFC2234_DIGIT}*)"
-readonly LIB_CORE_REGEX_RFC3986_HOST="(${LIB_CORE_REGEX_RFC3986_IP_LITERAL}|${LIB_CORE_REGEX_RFC3986_IPV4ADDRESS}|${LIB_CORE_REGEX_RFC3986_REG_NAME})"
-readonly LIB_CORE_REGEX_RFC3986_USERINFO="((${LIB_CORE_REGEX_RFC3986_UNRESERVED}|${LIB_CORE_REGEX_RFC3986_PCT_ENCODED}|${LIB_CORE_REGEX_RFC3986_SUB_DELIMS}|:)*)"
-readonly LIB_CORE_REGEX_RFC3986_AUTHORITY="((${LIB_CORE_REGEX_RFC3986_USERINFO}@){0,1}${LIB_CORE_REGEX_RFC3986_HOST}(:${LIB_CORE_REGEX_RFC3986_PORT}){0,1})"
-
-readonly LIB_CORE_REGEX_RFC3986_SCHEME="(${LIB_CORE_REGEX_RFC2234_ALPHA}(${LIB_CORE_REGEX_RFC2234_ALPHA}|${LIB_CORE_REGEX_RFC2234_DIGIT}|[+.-])*)"
-
-readonly LIB_CORE_REGEX_RFC3986_RELATIVE_PART="((//${LIB_CORE_REGEX_RFC3986_AUTHORITY}${LIB_CORE_REGEX_RFC3986_PATH_ABEMPTY})|${LIB_CORE_REGEX_RFC3986_PATH_ABSOLUTE}|${LIB_CORE_REGEX_RFC3986_PATH_NOSCHEME}|${LIB_CORE_REGEX_RFC3986_PATH_EMPTY})"
-
-readonly LIB_CORE_REGEX_RFC3986_RELATIVE_REF="(${LIB_CORE_REGEX_RFC3986_RELATIVE_PART}(\?${LIB_CORE_REGEX_RFC3986_QUERY}){0,1}(#${LIB_CORE_REGEX_RFC3986_FRAGMENT}){0,1})"
-
-readonly LIB_CORE_REGEX_RFC3986_HIER_PART="((//${LIB_CORE_REGEX_RFC3986_AUTHORITY}${LIB_CORE_REGEX_RFC3986_PATH_ABEMPTY})|${LIB_CORE_REGEX_RFC3986_PATH_ABSOLUTE}|${LIB_CORE_REGEX_RFC3986_PATH_ROOTLESS}|${LIB_CORE_REGEX_RFC3986_PATH_EMPTY})"
-
-readonly LIB_CORE_REGEX_RFC3986_ABSOLUTE_URI="(${LIB_CORE_REGEX_RFC3986_SCHEME}:${LIB_CORE_REGEX_RFC3986_HIER_PART}(\?${LIB_CORE_REGEX_RFC3986_QUERY}){0,1})"
-
-readonly LIB_CORE_REGEX_RFC3986_URI="(${LIB_CORE_REGEX_RFC3986_SCHEME}:${LIB_CORE_REGEX_RFC3986_HIER_PART}(\?${LIB_CORE_REGEX_RFC3986_QUERY}){0,1}(#${LIB_CORE_REGEX_RFC3986_FRAGMENT}){0,1})"
-
-readonly LIB_CORE_REGEX_RFC3986_URI_REFERENCE="(${LIB_CORE_REGEX_RFC3986_URI}|${LIB_CORE_REGEX_RFC3986_RELATIVE_REF})"
-
-#-------------------------------------------------------------------------------
-#  NETWORK (DNS)
-#-------------------------------------------------------------------------------
-readonly LIB_CORE_REGEX_NET_DNS_FQDN_TLD="[a-zA-Z-]{2,}" # top-level domain
-
-# Adapted from: R. Sabourin, http://regexlib.com/REDetails.aspx?regexp_id=391
-readonly LIB_CORE_REGEX_NET_DNS_FQDN_SEG="[a-zA-Z0-9]([a-zA-Z0-9-]{0,61}[a-zA-Z0-9]){0,1}"
-readonly LIB_CORE_REGEX_NET_DNS_FQDN="((${LIB_CORE_REGEX_NET_DNS_FQDN_SEG})\.){1,}(${LIB_CORE_REGEX_NET_DNS_FQDN_TLD})"
-readonly LIB_CORE_REGEX_NET_DNS_FQDN_OR_WILDCARD="(\*\.){0,1}(${LIB_CORE_REGEX_NET_DNS_FQDN})"
-readonly LIB_CORE_REGEX_NET_DNS_FQDN_WILDCARD="\*\.(${LIB_CORE_REGEX_NET_DNS_FQDN})"
-readonly LIB_CORE_REGEX_NET_DNS_SRV="_(${LIB_CORE_REGEX_NET_DNS_FQDN_SEG})\._(TCP|tcp|UDP|udp)\.(${LIB_CORE_REGEX_NET_DNS_FQDN})\.{0,1}"
-
-#-------------------------------------------------------------------------------
-#  NETWORK (IPv4)
-#-------------------------------------------------------------------------------
-# Adapted from: J. Goyvaerts, S. Levithan, https://www.oreilly.com/library/view/regular-expressions-cookbook/9780596802837/ch07s16.html
-readonly LIB_CORE_REGEX_NET_IPV4_ADDR_SEG="25[0-5]|2[0-4][0-9]|[01]{0,1}[0-9][0-9]{0,1}"
-readonly LIB_CORE_REGEX_NET_IPV4_ADDR="((${LIB_CORE_REGEX_NET_IPV4_ADDR_SEG})\.){3,3}(${LIB_CORE_REGEX_NET_IPV4_ADDR_SEG})"
-readonly LIB_CORE_REGEX_NET_IPV4_CIDR="(${LIB_CORE_REGEX_NET_IPV4_ADDR})\/(3[0-2]|[1-2][0-9]|[0-9])"
-readonly LIB_CORE_REGEX_NET_IPV4_RANGE="(${LIB_CORE_REGEX_NET_IPV4_ADDR})-(${LIB_CORE_REGEX_NET_IPV4_ADDR})"
-
-#-------------------------------------------------------------------------------
-#  NETWORK (IPv6)
-#-------------------------------------------------------------------------------
-# Adapted from: S. Ryan, https://community.helpsystems.com/forums/intermapper/miscellaneous-topics/5acc4fcf-fa83-e511-80cf-0050568460e4
-readonly LIB_CORE_REGEX_NET_IPV6_ADDR="((([0-9A-Fa-f]{1,4}:){7}([0-9A-Fa-f]{1,4}|:))|(([0-9A-Fa-f]{1,4}:){6}(:[0-9A-Fa-f]{1,4}|((25[0-5]|2[0-4][[:digit:]]|1[[:digit:]][[:digit:]]|[1-9]{0,1}[[:digit:]])(\.(25[0-5]|2[0-4][[:digit:]]|1[[:digit:]][[:digit:]]|[1-9]{0,1}[[:digit:]])){3})|:))|(([0-9A-Fa-f]{1,4}:){5}(((:[0-9A-Fa-f]{1,4}){1,2})|:((25[0-5]|2[0-4][[:digit:]]|1[[:digit:]][[:digit:]]|[1-9]{0,1}[[:digit:]])(\.(25[0-5]|2[0-4][[:digit:]]|1[[:digit:]][[:digit:]]|[1-9]{0,1}[[:digit:]])){3})|:))|(([0-9A-Fa-f]{1,4}:){4}(((:[0-9A-Fa-f]{1,4}){1,3})|((:[0-9A-Fa-f]{1,4}){0,1}:((25[0-5]|2[0-4][[:digit:]]|1[[:digit:]][[:digit:]]|[1-9]{0,1}[[:digit:]])(\.(25[0-5]|2[0-4][[:digit:]]|1[[:digit:]][[:digit:]]|[1-9]{0,1}[[:digit:]])){3}))|:))|(([0-9A-Fa-f]{1,4}:){3}(((:[0-9A-Fa-f]{1,4}){1,4})|((:[0-9A-Fa-f]{1,4}){0,2}:((25[0-5]|2[0-4][[:digit:]]|1[[:digit:]][[:digit:]]|[1-9]{0,1}[[:digit:]])(\.(25[0-5]|2[0-4][[:digit:]]|1[[:digit:]][[:digit:]]|[1-9]{0,1}[[:digit:]])){3}))|:))|(([0-9A-Fa-f]{1,4}:){2}(((:[0-9A-Fa-f]{1,4}){1,5})|((:[0-9A-Fa-f]{1,4}){0,3}:((25[0-5]|2[0-4][[:digit:]]|1[[:digit:]][[:digit:]]|[1-9]{0,1}[[:digit:]])(\.(25[0-5]|2[0-4][[:digit:]]|1[[:digit:]][[:digit:]]|[1-9]{0,1}[[:digit:]])){3}))|:))|(([0-9A-Fa-f]{1,4}:){1}(((:[0-9A-Fa-f]{1,4}){1,6})|((:[0-9A-Fa-f]{1,4}){0,4}:((25[0-5]|2[0-4][[:digit:]]|1[[:digit:]][[:digit:]]|[1-9]{0,1}[[:digit:]])(\.(25[0-5]|2[0-4][[:digit:]]|1[[:digit:]][[:digit:]]|[1-9]{0,1}[[:digit:]])){3}))|:))|(:(((:[0-9A-Fa-f]{1,4}){1,7})|((:[0-9A-Fa-f]{1,4}){0,5}:((25[0-5]|2[0-4][[:digit:]]|1[[:digit:]][[:digit:]]|[1-9]{0,1}[[:digit:]])(\.(25[0-5]|2[0-4][[:digit:]]|1[[:digit:]][[:digit:]]|[1-9]{0,1}[[:digit:]])){3}))|:)))(%.{1,}){0,1}"
-readonly LIB_CORE_REGEX_NET_IPV6_CIDR="(${LIB_CORE_REGEX_NET_IPV6_ADDR})\/(12[0-8]|1[0-1][0-9]|[1-9][0-9]|[0-9])"
-
-#-------------------------------------------------------------------------------
-#  NETWORK (FQDN/IPv4/IPv6)
-#-------------------------------------------------------------------------------
-readonly LIB_CORE_REGEX_NET_HOST="${LIB_CORE_REGEX_NET_DNS_FQDN}|${LIB_CORE_REGEX_NET_IPV4_ADDR}|${LIB_CORE_REGEX_NET_IPV6_ADDR}"
-
-#-------------------------------------------------------------------------------
-#  NETWORK (MAC)
-#-------------------------------------------------------------------------------
-# Adapted from: T. Rudyk, http://regexlib.com/REDetails.aspx?regexp_id=154
-readonly LIB_CORE_REGEX_NET_MAC="([0-9a-fA-F][0-9a-fA-F]:){5}([0-9a-fA-F][0-9a-fA-F])"
-
-#-------------------------------------------------------------------------------
-#  NETWORK (ICMP/TCP/UDP)
-#-------------------------------------------------------------------------------
-readonly LIB_CORE_REGEX_NET_ICMP_TYPE="[0-9]{1,2}|1[0-9]{2}|2[0-4][0-9]|25[0-5]|ping"
-
-# Adapted from: A. Gusarov, http://regexlib.com/REDetails.aspx?regexp_id=4958
-readonly LIB_CORE_REGEX_NET_TCPUDP_PORT="([1-9][0-9]{0,3}|[1-5][0-9]{4}|6[0-4][0-9]{3}|65[0-4][0-9]{2}|655[0-2][0-9]|6553[0-5])"
-readonly LIB_CORE_REGEX_NET_TCPUDP_PORT_RANGE="${LIB_CORE_REGEX_NET_TCPUDP_PORT}-${LIB_CORE_REGEX_NET_TCPUDP_PORT}"
-
-#-------------------------------------------------------------------------------
-#  NETWORK (SFTP/SSH)
-#-------------------------------------------------------------------------------
-# See also: https://datatracker.ietf.org/doc/html/draft-ietf-secsh-scp-sftp-ssh-uri-04
-
-# Secure Shell (SSH) URI
-readonly LIB_CORE_REGEX_NET_SSH_PARAMVALUE="((${LIB_CORE_REGEX_RFC2234_ALPHA}|${LIB_CORE_REGEX_RFC2234_DIGIT}|-)*)"
-readonly LIB_CORE_REGEX_NET_SSH_PARAMNAME="${LIB_CORE_REGEX_NET_SSH_PARAMVALUE}"
-readonly LIB_CORE_REGEX_NET_SSH_C_PARAM="(${LIB_CORE_REGEX_NET_SSH_PARAMNAME}=${LIB_CORE_REGEX_NET_SSH_PARAMVALUE})"
-readonly LIB_CORE_REGEX_NET_SSH_USERINFO="${LIB_CORE_REGEX_RFC3986_USERINFO}"
-readonly LIB_CORE_REGEX_NET_SSH_SSH_INFO="(${LIB_CORE_REGEX_NET_SSH_USERINFO}{0,1}(;${LIB_CORE_REGEX_NET_SSH_C_PARAM}(,${LIB_CORE_REGEX_NET_SSH_C_PARAM})*){0,1})"
-readonly LIB_CORE_REGEX_NET_SSH_PATH_ABEMPTY="${LIB_CORE_REGEX_RFC3986_PATH_ABEMPTY}"
-readonly LIB_CORE_REGEX_NET_SSH_PORT="${LIB_CORE_REGEX_RFC3986_PORT}"
-readonly LIB_CORE_REGEX_NET_SSH_HOST="${LIB_CORE_REGEX_RFC3986_HOST}"
-readonly LIB_CORE_REGEX_NET_SSH_AUTHORITY="((${LIB_CORE_REGEX_NET_SSH_SSH_INFO}{0,1}@){0,1}${LIB_CORE_REGEX_NET_SSH_HOST}(:${LIB_CORE_REGEX_NET_SSH_PORT}){0,1})"
-readonly LIB_CORE_REGEX_NET_SSH_HIER_PART="(//${LIB_CORE_REGEX_NET_SSH_AUTHORITY}${LIB_CORE_REGEX_NET_SSH_PATH_ABEMPTY})"
-readonly LIB_CORE_REGEX_NET_SSH_SSHURI="ssh:${LIB_CORE_REGEX_NET_SSH_HIER_PART}"
-
-# Secure Shell (SSH) URI Short Version (user@hostname.fqdn)
-readonly LIB_CORE_REGEX_NET_SSH_SSHURI_SHORT="${LIB_CORE_REGEX_NET_SSH_SSH_INFO}@${LIB_CORE_REGEX_NET_SSH_HOST}(:${LIB_CORE_REGEX_NET_SSH_PORT}){0,1}${LIB_CORE_REGEX_NET_SSH_PATH_ABEMPTY}"
-
-# Secure File Transfer Protocol (SFTP) URI
-readonly LIB_CORE_REGEX_NET_SFTP_PARAMVALUE="((${LIB_CORE_REGEX_RFC2234_ALPHA}|${LIB_CORE_REGEX_RFC2234_DIGIT}|-)*)"
-readonly LIB_CORE_REGEX_NET_SFTP_PARAMNAME="${LIB_CORE_REGEX_NET_SFTP_PARAMVALUE}"
-readonly LIB_CORE_REGEX_NET_SFTP_S_PARAM="(${LIB_CORE_REGEX_NET_SFTP_PARAMNAME}=${LIB_CORE_REGEX_NET_SFTP_PARAMVALUE})"
-readonly LIB_CORE_REGEX_NET_SFTP_C_PARAM="${LIB_CORE_REGEX_NET_SFTP_S_PARAM}"
-readonly LIB_CORE_REGEX_NET_SFTP_USERINFO="${LIB_CORE_REGEX_RFC3986_USERINFO}"
-readonly LIB_CORE_REGEX_NET_SFTP_SSH_INFO="(${LIB_CORE_REGEX_NET_SFTP_USERINFO}{0,1}(;${LIB_CORE_REGEX_NET_SFTP_C_PARAM}(,${LIB_CORE_REGEX_NET_SFTP_C_PARAM})*){0,1})"
-readonly LIB_CORE_REGEX_NET_SFTP_PORT="${LIB_CORE_REGEX_RFC3986_PORT}"
-readonly LIB_CORE_REGEX_NET_SFTP_HOST="${LIB_CORE_REGEX_RFC3986_HOST}"
-readonly LIB_CORE_REGEX_NET_SFTP_AUTHORITY="((${LIB_CORE_REGEX_NET_SFTP_SSH_INFO}@){0,1}${LIB_CORE_REGEX_NET_SFTP_HOST}(:${LIB_CORE_REGEX_NET_SFTP_PORT}){0,1})"
-readonly LIB_CORE_REGEX_NET_SFTP_PATH_ABEMPTY="${LIB_CORE_REGEX_RFC3986_PATH_ABEMPTY}"
-readonly LIB_CORE_REGEX_NET_SFTP_PATH="${LIB_CORE_REGEX_NET_SFTP_PATH_ABEMPTY}"
-readonly LIB_CORE_REGEX_NET_SFTP_HIER_PART="(//${LIB_CORE_REGEX_NET_SFTP_AUTHORITY}${LIB_CORE_REGEX_NET_SFTP_PATH}(;${LIB_CORE_REGEX_NET_SFTP_S_PARAM}(,${LIB_CORE_REGEX_NET_SFTP_S_PARAM})*){0,1})"
-readonly LIB_CORE_REGEX_NET_SFTP_SFTPURI="sftp:${LIB_CORE_REGEX_NET_SFTP_HIER_PART}"
-
-# Secure File Transfer Protocol (SFTP) URI Short Version (user@hostname.fqdn)
-readonly LIB_CORE_REGEX_NET_SFTP_SFTPURI_SHORT="${LIB_CORE_REGEX_NET_SFTP_SSH_INFO}@${LIB_CORE_REGEX_NET_SFTP_HOST}(:${LIB_CORE_REGEX_NET_SFTP_PORT}){0,1}${LIB_CORE_REGEX_NET_SFTP_PATH}(;${LIB_CORE_REGEX_NET_SFTP_S_PARAM}(,${LIB_CORE_REGEX_NET_SFTP_S_PARAM})*){0,1}"
-
-#-------------------------------------------------------------------------------
-#  IPSET
-#-------------------------------------------------------------------------------
-readonly LIB_CORE_REGEX_IPSET_IPADDR_4="(${LIB_CORE_REGEX_NET_IPV4_ADDR})|(${LIB_CORE_REGEX_NET_IPV4_CIDR})|(${LIB_CORE_REGEX_NET_IPV4_RANGE})"
-readonly LIB_CORE_REGEX_IPSET_IPADDR_6="(${LIB_CORE_REGEX_NET_IPV6_ADDR})|(${LIB_CORE_REGEX_NET_IPV6_CIDR})"
-readonly LIB_CORE_REGEX_IPSET_PORT_BITMAP="(${LIB_CORE_REGEX_NET_TCPUDP_PORT}(-${LIB_CORE_REGEX_NET_TCPUDP_PORT}){0,1})"
-readonly LIB_CORE_REGEX_IPSET_PORT_HASH_4_6="((tcp|sctp|udp|udplite|tcpudp):${LIB_CORE_REGEX_IPSET_PORT_BITMAP})"
-readonly LIB_CORE_REGEX_IPSET_PORT_HASH_4="${LIB_CORE_REGEX_IPSET_PORT_HASH_4_6}|(icmp:${LIB_CORE_REGEX_NET_ICMP_TYPE})"
-readonly LIB_CORE_REGEX_IPSET_PORT_HASH_6="${LIB_CORE_REGEX_IPSET_PORT_HASH_4_6}|(icmpv6:${LIB_CORE_REGEX_NET_ICMP_TYPE})"
-readonly LIB_CORE_REGEX_IPSET_SETNAME="[a-zA-Z0-9]([a-zA-Z0-9_]{0,1}[a-zA-Z0-9])*"
-
-#-------------------------------------------------------------------------------
-#  LUKS2
-#-------------------------------------------------------------------------------
-# See also: https://man7.org/linux/man-pages/man1/systemd-cryptenroll.1.html
-readonly LIB_CORE_REGEX_LUKS2_TPM2_PCRS="(1?[0-9]|2[0-3])(\+(1?[0-9]|2[0-3]))*"
-
-#-------------------------------------------------------------------------------
-#  DATA TYPES
-#-------------------------------------------------------------------------------
-readonly LIB_CORE_REGEX_TYPE_BOOLEAN="true|false"
-
-# Adapted from: J. Goyvaerts, S. Levithan, https://www.oreilly.com/library/view/regular-expressions-cookbook/9781449327453/ch06s10.html
-readonly LIB_CORE_REGEX_TYPE_FLOAT="([-+]?[0-9]*\.[0-9]+([eE][-+]?[0-9]+)?)"
-readonly LIB_CORE_REGEX_TYPE_FLOAT_NEG="([-][0-9]*\.[0-9]*[1-9]([eE][-+]?[0-9]+)?)"
-readonly LIB_CORE_REGEX_TYPE_FLOAT_NEG0="([-][0-9]*\.[0-9]+([eE][-+]?[0-9]+)?)"
-readonly LIB_CORE_REGEX_TYPE_FLOAT_POS="([+]?[0-9]*\.[0-9]*[1-9]([eE][-+]?[0-9]+)?)"
-readonly LIB_CORE_REGEX_TYPE_FLOAT_POS0="([+]?[0-9]*\.[0-9]+([eE][-+]?[0-9]+)?)"
-
-readonly LIB_CORE_REGEX_TYPE_HEX="[0-9A-Fa-f]+"
-readonly LIB_CORE_REGEX_TYPE_INTEGER="([-+]?(0|[1-9][0-9]*))"
-readonly LIB_CORE_REGEX_TYPE_INTEGER_NEG="([-][1-9][0-9]*)"
-readonly LIB_CORE_REGEX_TYPE_INTEGER_NEG0="(([-+]?0)|${LIB_CORE_REGEX_TYPE_INTEGER_NEG})"
-readonly LIB_CORE_REGEX_TYPE_INTEGER_POS="([+]?[1-9][0-9]*)"
-readonly LIB_CORE_REGEX_TYPE_INTEGER_POS0="(([-+]?0)|${LIB_CORE_REGEX_TYPE_INTEGER_POS})"
-readonly LIB_CORE_REGEX_TYPE_NUM_DEC="${LIB_CORE_REGEX_TYPE_INTEGER}|${LIB_CORE_REGEX_TYPE_FLOAT}"
-readonly LIB_CORE_REGEX_TYPE_NUM_DEC_NEG="${LIB_CORE_REGEX_TYPE_INTEGER_NEG}|${LIB_CORE_REGEX_TYPE_FLOAT_NEG}"
-readonly LIB_CORE_REGEX_TYPE_NUM_DEC_NEG0="${LIB_CORE_REGEX_TYPE_INTEGER_NEG0}|${LIB_CORE_REGEX_TYPE_FLOAT_NEG0}"
-readonly LIB_CORE_REGEX_TYPE_NUM_DEC_POS="${LIB_CORE_REGEX_TYPE_INTEGER_POS}|${LIB_CORE_REGEX_TYPE_FLOAT_POS}"
-readonly LIB_CORE_REGEX_TYPE_NUM_DEC_POS0="${LIB_CORE_REGEX_TYPE_INTEGER_POS0}|${LIB_CORE_REGEX_TYPE_FLOAT_POS0}"
-readonly LIB_CORE_REGEX_TYPE_OID="[0-2]((\.0)|(\.[1-9][0-9]*))*" # Adapted from: https://regexr.com/38m0v
-readonly LIB_CORE_REGEX_TYPE_UUID="(${LIB_CORE_REGEX_TYPE_HEX}{8}(-${LIB_CORE_REGEX_TYPE_HEX}{4}){3}-${LIB_CORE_REGEX_TYPE_HEX}{12})"
-readonly LIB_CORE_REGEX_TYPE_YESNO="yes|no"
-
-readonly LIB_CORE_REGEX_TYPE_YY_DE="J|j"
-readonly LIB_CORE_REGEX_TYPE_YY_EN="Y|y"
-readonly LIB_CORE_REGEX_TYPE_NN_DE="N|n"
-readonly LIB_CORE_REGEX_TYPE_NN_EN="N|n"
-
-#-------------------------------------------------------------------------------
-#  CUPS
-#-------------------------------------------------------------------------------
-readonly LIB_CORE_REGEX_CUPS_HOSTPORT="((${LIB_CORE_REGEX_NET_IPV4_ADDR}|${LIB_CORE_REGEX_NET_DNS_FQDN_SEG}|${LIB_CORE_REGEX_NET_DNS_FQDN})(:${LIB_CORE_REGEX_NET_TCPUDP_PORT}){0,1})"
-readonly LIB_CORE_REGEX_CUPS_QUEUE="([a-zA-Z0-9_%-]{1,})"
-
-# See also: https://www.cups.org/doc/network.html
-readonly LIB_CORE_REGEX_CUPS_DEVURI_DNSSD_ADDR="([a-zA-Z0-9]([a-zA-Z0-9_%-]{0,61}[a-zA-Z0-9]){0,1}\._(ipp|ipps|pdl-datastream|printer)\._tcp\.(local|${LIB_CORE_REGEX_NET_DNS_FQDN}))"
-readonly LIB_CORE_REGEX_CUPS_DEVURI_DNSSD="(dnssd:\/\/${LIB_CORE_REGEX_CUPS_DEVURI_DNSSD_ADDR}\/(cups){0,1}\?uuid\=${LIB_CORE_REGEX_TYPE_UUID})"
-
-# See also: https://www.cups.org/doc/network.html#IPP
-readonly LIB_CORE_REGEX_CUPS_DEVURI_IPP_OPTS="((contimeout\=[0-9]{1,})|(encryption\=(always|ifrequested|never|required))|(version\=(1\.0|1\.1|2\.1))|(waitjob\=false)|(waitprinter\=false))"
-readonly LIB_CORE_REGEX_CUPS_DEVURI_IPP_PATH="((ipp\/print)|(printers\/${LIB_CORE_REGEX_CUPS_QUEUE}(\/.printer){0,1}))"
-readonly LIB_CORE_REGEX_CUPS_DEVURI_IPP_PROTO="(http|ipp|ipps)"
-readonly LIB_CORE_REGEX_CUPS_DEVURI_IPP_IPP="(${LIB_CORE_REGEX_CUPS_DEVURI_IPP_PROTO}:\/\/${LIB_CORE_REGEX_CUPS_HOSTPORT}\/${LIB_CORE_REGEX_CUPS_DEVURI_IPP_PATH}(\?${LIB_CORE_REGEX_CUPS_DEVURI_IPP_OPTS}(\&${LIB_CORE_REGEX_CUPS_DEVURI_IPP_OPTS})*){0,1})"
-
-# See also: https://wiki.debian.org/CUPSPrintQueues#The_device-uri_for_a_Networked_Printer
-readonly LIB_CORE_REGEX_CUPS_DEVURI_IPP_DNSSD="(${LIB_CORE_REGEX_CUPS_DEVURI_IPP_PROTO}:\/\/${LIB_CORE_REGEX_CUPS_DEVURI_DNSSD_ADDR}\/)"
-
-# See also: https://www.cups.org/doc/network.html#TABLE3
-#           https://opensource.apple.com/source/cups/cups-136/cups/doc/help/network.html#TABLE3
-readonly LIB_CORE_REGEX_CUPS_DEVURI_LPD_OPTS="((banner\=on)|(contimeout\=[0-9]{1,})|(format\=(c|d|f|g|l|n|o|p|r|t|v))|(mode\=stream)|(order\=data\,control)|(reserve\=(none|rfc1179))|(sanitize_title\=(no|yes))|(timeout\=[0-9]{1,}))"
-readonly LIB_CORE_REGEX_CUPS_DEVURI_LPD="(lpd:\/\/${LIB_CORE_REGEX_CUPS_HOSTPORT}\/${LIB_CORE_REGEX_CUPS_QUEUE}(\?${LIB_CORE_REGEX_CUPS_DEVURI_LPD_OPTS}(\&${LIB_CORE_REGEX_CUPS_DEVURI_LPD_OPTS})*){0,1})"
-
-# See also: https://opensource.apple.com/source/cups/cups-86/doc/sdd.shtml
-readonly LIB_CORE_REGEX_CUPS_DEVURI_PARALLEL="(parallel:\/dev(\/[a-zA-Z0-9_-]{1,}){1,})"
-
-# See also: https://opensource.apple.com/source/cups/cups-86/doc/sdd.shtml
-#           https://www.cups.org/doc/spec-ipp.html
-readonly LIB_CORE_REGEX_CUPS_DEVURI_SERIAL_OPTS="((baud\=[0-9]{1,})|(bits\=(7|8))|(parity\=(even|odd|none))|(flow\=(dtrdsr|hard|none|rtscts|xonxoff)))"
-readonly LIB_CORE_REGEX_CUPS_DEVURI_SERIAL="(serial:\/dev(\/[a-zA-Z0-9_-]{1,}){1,}\?${LIB_CORE_REGEX_CUPS_DEVURI_SERIAL_OPTS}(\+${LIB_CORE_REGEX_CUPS_DEVURI_SERIAL_OPTS})*)"
-
-# See also: https://www.cups.org/doc/network.html
-readonly LIB_CORE_REGEX_CUPS_DEVURI_SOCKET_OPTS="((contimeout\=[0-9]{1,})|(waiteof\=(true|false)))"
-readonly LIB_CORE_REGEX_CUPS_DEVURI_SOCKET="(socket:\/\/${LIB_CORE_REGEX_CUPS_HOSTPORT}(\/\?${LIB_CORE_REGEX_CUPS_DEVURI_SOCKET_OPTS}(\&${LIB_CORE_REGEX_CUPS_DEVURI_SOCKET_OPTS})*){0,1})"
-
-# See also: https://wiki.debian.org/CUPSPrintQueues#deviceuri
-readonly LIB_CORE_REGEX_CUPS_DEVURI_USB_OPTS="([a-zA-Z0-9_]{1,}\=[a-zA-Z0-9_]{1,})"
-readonly LIB_CORE_REGEX_CUPS_DEVURI_USB="(usb:\/\/[a-zA-Z0-9]{1,}(\/${LIB_CORE_REGEX_CUPS_QUEUE}){1,}(\?${LIB_CORE_REGEX_CUPS_DEVURI_USB_OPTS}(\&${LIB_CORE_REGEX_CUPS_DEVURI_USB_OPTS})*){0,1})"
-
-readonly LIB_CORE_REGEX_CUPS_DEVURI="${LIB_CORE_REGEX_CUPS_DEVURI_DNSSD}|${LIB_CORE_REGEX_CUPS_DEVURI_IPP_IPP}|${LIB_CORE_REGEX_CUPS_DEVURI_IPP_DNSSD}|${LIB_CORE_REGEX_CUPS_DEVURI_LPD}|${LIB_CORE_REGEX_CUPS_DEVURI_PARALLEL}|${LIB_CORE_REGEX_CUPS_DEVURI_SERIAL}|${LIB_CORE_REGEX_CUPS_DEVURI_SOCKET}|${LIB_CORE_REGEX_CUPS_DEVURI_USB}"
-
-#-------------------------------------------------------------------------------
-#  OpenSC
-#-------------------------------------------------------------------------------
-# See also 'man pkcs15-init' ('--profile')
-readonly LIB_CORE_REGEX_OPENSC_P15_PROFILE="[a-zA-Z_0-9]+(\+[a-zA-Z_0-9]+)*"
-
-#-------------------------------------------------------------------------------
-#  POSIX
-#-------------------------------------------------------------------------------
-# See also: https://stackoverflow.com/a/2821183
-readonly LIB_CORE_REGEX_POSIX_NAME="[a-zA-Z_][a-zA-Z_0-9]*"
-
-# See also: https://www.ibm.com/docs/en/zos/2.1.0?topic=locales-posix-portable-file-name-character-set
-readonly LIB_CORE_REGEX_POSIX_FILENAME="[A-Za-z0-9._-]+"
 
 #===============================================================================
 #  FUNCTIONS
@@ -1017,7 +727,7 @@ lib_core_is() {
       #-------------------------------------------------------------------------
       #  finally check if there are any regex tests matching <arg_select>
       #-------------------------------------------------------------------------
-      *) lib_core_regex "${arg_select}" "${var}" ;;
+      *) lib_regex "${arg_select}" "${var}" ;;
     esac                                                                    || \
 
     return
@@ -1254,7 +964,7 @@ lib_core_msg() {
 #      OUTPUTS:  Credentials in clear-text form to <stdout>
 #   RETURNS  0:  OK
 #            1:  Error: An environment variable was provided but the name
-#                       is not POSIX compliant ([a-zA-Z_][a-zA-Z_0-9]*)
+#                       is not POSIX compliant ([A-Za-z_][A-Za-z_0-9]*)
 #      EXAMPLE:  Via an environment variable
 #                  > export mypwd="123456"
 #                  > lib_core_parse_credentials "ENV:mypwd"
@@ -1338,89 +1048,10 @@ lib_core_path_get_abs() {
 
 #===  FUNCTION  ================================================================
 #         NAME:  lib_core_regex
-#  DESCRIPTION:  Check if a given string matches a regular expression
-# PARAMETER  1:  Regex pattern selector (see switch-case statement below)
-#            2:  String to check
+#  DESCRIPTION:  Wrapper for <lib_regex()>, see </lib/regex.lib.sh>
 #===============================================================================
 lib_core_regex() {
-  local arg_option="$1"
-  local arg_str="$2"
-
-  #-----------------------------------------------------------------------------
-  #  SELECT REGEX
-  #-----------------------------------------------------------------------------
-  local regex=""
-  case "${arg_option}" in
-    --bool|--boolean)     regex="${LIB_CORE_REGEX_TYPE_BOOLEAN}"              ;;
-    --cups-devuri)        regex="${LIB_CORE_REGEX_CUPS_DEVURI}"               ;;
-    --cups-queue)         regex="${LIB_CORE_REGEX_CUPS_QUEUE}"                ;;
-    --dns-srv)            regex="${LIB_CORE_REGEX_NET_DNS_SRV}"               ;;
-    --float)              regex="${LIB_CORE_REGEX_TYPE_FLOAT}"                ;;
-    --float-neg)          regex="${LIB_CORE_REGEX_TYPE_FLOAT_NEG}"            ;;
-    --float-neg0)         regex="${LIB_CORE_REGEX_TYPE_FLOAT_NEG0}"           ;;
-    --float-pos)          regex="${LIB_CORE_REGEX_TYPE_FLOAT_POS}"            ;;
-    --float-pos0)         regex="${LIB_CORE_REGEX_TYPE_FLOAT_POS0}"           ;;
-    --fqdn)               regex="${LIB_CORE_REGEX_NET_DNS_FQDN}"              ;;
-    --fqdn-or-wildcard)   regex="${LIB_CORE_REGEX_NET_DNS_FQDN_OR_WILDCARD}"  ;;
-    --fqdn-wildcard)      regex="${LIB_CORE_REGEX_NET_DNS_FQDN_WILDCARD}"     ;;
-    --hex)                regex="${LIB_CORE_REGEX_TYPE_HEX}"                  ;;
-    --host)               regex="${LIB_CORE_REGEX_NET_HOST}"                  ;;
-    --hostname)           regex="${LIB_CORE_REGEX_NET_DNS_FQDN_SEG}"          ;;
-    --icmp)               regex="${LIB_CORE_REGEX_NET_ICMP_TYPE}"             ;;
-    --int|--integer)      regex="${LIB_CORE_REGEX_TYPE_INTEGER}"              ;;
-    --int-neg)            regex="${LIB_CORE_REGEX_TYPE_INTEGER_NEG}"          ;;
-    --int-neg0)           regex="${LIB_CORE_REGEX_TYPE_INTEGER_NEG0}"         ;;
-    --int-pos)            regex="${LIB_CORE_REGEX_TYPE_INTEGER_POS}"          ;;
-    --int-pos0)           regex="${LIB_CORE_REGEX_TYPE_INTEGER_POS0}"         ;;
-    --ip4|--ipv4|--inet)  regex="${LIB_CORE_REGEX_NET_IPV4_ADDR}"             ;;
-    --ip4-cidr)           regex="${LIB_CORE_REGEX_NET_IPV4_CIDR}"             ;;
-    --ip4-range)          regex="${LIB_CORE_REGEX_NET_IPV4_RANGE}"            ;;
-    --ip6|--ipv6|--inet6) regex="${LIB_CORE_REGEX_NET_IPV6_ADDR}"             ;;
-    --ip6-cidr)           regex="${LIB_CORE_REGEX_NET_IPV6_CIDR}"             ;;
-    --ipset-ip4)          regex="${LIB_CORE_REGEX_IPSET_IPADDR_4}"            ;;
-    --ipset-ip6)          regex="${LIB_CORE_REGEX_IPSET_IPADDR_6}"            ;;
-    --ipset-setname)      regex="${LIB_CORE_REGEX_IPSET_SETNAME}"             ;;
-    --ipset-port-bitmap)  regex="${LIB_CORE_REGEX_IPSET_PORT_BITMAP}"         ;;
-    --ipset-port-hash4)   regex="${LIB_CORE_REGEX_IPSET_PORT_HASH_4}"         ;;
-    --ipset-port-hash6)   regex="${LIB_CORE_REGEX_IPSET_PORT_HASH_6}"         ;;
-    --luks2-tpm2-pcrs)    regex="${LIB_CORE_REGEX_LUKS2_TPM2_PCRS}"           ;;
-    --mac)                regex="${LIB_CORE_REGEX_NET_MAC}"                   ;;
-    --num|--number)       regex="${LIB_CORE_REGEX_TYPE_NUM_DEC}"              ;;
-    --num-neg)            regex="${LIB_CORE_REGEX_TYPE_NUM_DEC_NEG}"          ;;
-    --num-neg0)           regex="${LIB_CORE_REGEX_TYPE_NUM_DEC_NEG0}"         ;;
-    --num-pos)            regex="${LIB_CORE_REGEX_TYPE_NUM_DEC_POS}"          ;;
-    --num-pos0)           regex="${LIB_CORE_REGEX_TYPE_NUM_DEC_POS0}"         ;;
-    --oid)                regex="${LIB_CORE_REGEX_TYPE_OID}"                  ;;
-    --opensc-p15-profile) regex="${LIB_CORE_REGEX_OPENSC_P15_PROFILE}"        ;;
-    --posix-name|--funcname|--varname) regex="${LIB_CORE_REGEX_POSIX_NAME}"   ;;
-    --sftp-uri)           regex="${LIB_CORE_REGEX_NET_SFTP_SFTPURI}"          ;;
-    --sftp-uri-short)     regex="${LIB_CORE_REGEX_NET_SFTP_SFTPURI_SHORT}"    ;;
-    --ssh-uri)            regex="${LIB_CORE_REGEX_NET_SSH_SSHURI}"            ;;
-    --ssh-uri-short)      regex="${LIB_CORE_REGEX_NET_SSH_SSHURI_SHORT}"      ;;
-    --tcpudp|--port)      regex="${LIB_CORE_REGEX_NET_TCPUDP_PORT}"           ;;
-    --tcpudp-range|--portrange) regex="${LIB_CORE_REGEX_NET_TCPUDP_PORT_RANGE}"  ;;
-    --uri|--rfc3986)      regex="${LIB_CORE_REGEX_RFC3986_URI}"               ;;
-    --yesno)              regex="${LIB_CORE_REGEX_TYPE_YESNO}"                ;;
-    --Yy-${LIB_C_ID_L_DE}) regex="${LIB_CORE_REGEX_TYPE_YY_DE}"               ;;
-    --Yy-${LIB_C_ID_L_EN}) regex="${LIB_CORE_REGEX_TYPE_YY_EN}"               ;;
-    --Nn-${LIB_C_ID_L_DE}) regex="${LIB_CORE_REGEX_TYPE_NN_DE}"               ;;
-    --Nn-${LIB_C_ID_L_EN}) regex="${LIB_CORE_REGEX_TYPE_NN_EN}"               ;;
-    *)
-      # Besides the predefined patterns you can also use your own one. Please
-      # note that the pattern must follow POSIX's extended regular expression
-      # (ERE) notation, see also:
-      #   https://pubs.opengroup.org/onlinepubs/9799919799/basedefs/V1_chap09.html#tag_09_04
-      regex="${arg_option}"
-      ;;
-  esac
-
-  #-----------------------------------------------------------------------------
-  #  PERFORM CHECK
-  #-----------------------------------------------------------------------------
-  # Better 'echo' than 'printf', e.g. if <arg_str> is empty ('')
-  # and <regex> is '.*' the return value would be '1' with 'printf'
-  # printf "%s" "${arg_str}" | grep -q -E "^(${regex})\$"
-  echo "${arg_str}" | grep -q -E "^(${regex})\$"
+  lib_regex "$@"
 }
 
 #===  FUNCTION  ================================================================
@@ -1546,7 +1177,7 @@ lib_core_str_is_multiline() {
 #  DESCRIPTION:  Generate a random string
 # PARAMETER  1:  Length of the string (>0)
 #            2:  Allowed characters, specified either
-#                  - as a range, e.g. 'a-zA-Z0-9', or
+#                  - as a range, e.g. 'A-Za-z0-9', or
 #                  - as a class, e.g. '[:alnum:]'
 #                See also:
 #                  https://pubs.opengroup.org/onlinepubs/9699919799/utilities/tr.html
@@ -1700,7 +1331,7 @@ lib_core_str_remove_trailing_spaces() {
 # PARAMETER  1:  String to modify
 #            2:  Character(s) to replace or delete, specified either as a
 #                  - single character, e.g. 'a',
-#                  - range, e.g. 'a-zA-Z0-9', or
+#                  - range, e.g. 'A-Za-z0-9', or
 #                  - character class, e.g. '[:alnum:]'.
 #                See also:
 #                  https://pubs.opengroup.org/onlinepubs/9699919799/utilities/tr.html

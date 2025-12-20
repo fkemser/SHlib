@@ -103,9 +103,13 @@ After developing several shell scripts it was time to gather recurring code patt
 
 - essential functions, such as
   - checking the existence of a command/directory/file,
-  - performing regular expression checks,
   - converting/modifying variables,
   - string manipulation,
+
+- logging and output formatting functions, such as
+  - system logging,
+  - formatting terminal messages,
+  - providing message templates, e.g. license notification,
 
 - mathematical functions and operations, such as
   - advanced calculation using `bc`
@@ -113,11 +117,6 @@ After developing several shell scripts it was time to gather recurring code patt
   - converting units, e.g. from 'MB' into 'GB',
   - checking if a number is within a specified range,
   - functions like `abs` or `sign`,
-
-- logging and output formatting functions, such as
-  - system logging,
-  - formatting terminal messages,
-  - providing message templates, e.g. license notification,
 
 - network related functions, such as
   - changing an interface's IP address,
@@ -130,6 +129,11 @@ After developing several shell scripts it was time to gather recurring code patt
   - process-related tasks,
   - modifying bootloader settings, or
   - SSH/SCP wrapper,
+
+- regular expression tests, e.g.
+  - data types (boolean, float, hexadecimal, integer),
+  - network-related (DNS, ICMP, IPv4, IPv6, MAC, TCP/UDP), and
+  - application-specific (CUPS, IPset, LUKS, etc.)
 
 - special tool-related functions, e.g. for
   - iperf3,
@@ -298,7 +302,6 @@ Function | Description
 `lib_core_list_contains_str_ptr` | Look for a string within a delimited list of strings where the list does not(!) contain the strings themselves but their variable pointers
 `lib_core_parse_credentials` | Parse credentials that are provided via an environment variable
 `lib_core_path_get_abs` | Get absolute path to a directory or file (in case it contains relative paths or symlinks)
-`lib_core_regex` | Check if a given string matches a regular expression
 `lib_core_str_escape_chars_sed` | Escape ('\...') characters that are special to 'sed' command
 `lib_core_str_get_length` | Get length of a string
 `lib_core_str_filter_and_sort` | Filter and sort a (multiline) string
@@ -436,6 +439,16 @@ Function | Description
 `lib_os_ssh_test` | Check if one or more hosts are accessible via SSH (batch mode)
 `lib_os_ssh_wrapper` | SSH command wrapper
 `lib_os_user_is_member_of` | Check if current (or another) user is a member of a certain group
+
+<p align="right">(<a href="#documentation">back to overview</a>)</p>
+
+
+
+
+### `regex.lib.sh`
+| Function | Description
+:--- | :---
+`lib_regex` | Check if a given string matches a regular expression
 
 <p align="right">(<a href="#documentation">back to overview</a>)</p>
 
