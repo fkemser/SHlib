@@ -132,7 +132,7 @@ After developing several shell scripts it was time to gather recurring code patt
 
 - regular expression tests, e.g.
   - data types (boolean, float, hexadecimal, integer),
-  - network-related (DNS, ICMP, IPv4, IPv6, MAC, TCP/UDP), and
+  - network-related (DNS, ICMP, IPv4/6, MAC, TCP, UDP), and
   - application-specific (CUPS, IPset, LUKS, etc.)
 
 - special tool-related functions, e.g. for

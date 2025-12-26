@@ -12,7 +12,7 @@
 #  DESCRIPTION:   Shell library providing regular expression tests, such as
 #
 #                   - data types (boolean, float, hexadecimal, integer),
-#                   - network-related (DNS, ICMP, IPv4, IPv6, MAC, TCP/UDP), and
+#                   - network-related (DNS, ICMP, IPv4/6, MAC, TCP, UDP), and
 #                   - application-specific (CUPS, IPset, LUKS, etc.) tests.
 #
 #                 For a full list please have a look at the function
@@ -249,6 +249,7 @@ readonly LIB_REGEX_TYPE_FLOAT_NEG0="([-][0-9]*\.[0-9]+([eE][-+]?[0-9]+)?)"
 readonly LIB_REGEX_TYPE_FLOAT_POS="([+]?[0-9]*\.[0-9]*[1-9]([eE][-+]?[0-9]+)?)"
 readonly LIB_REGEX_TYPE_FLOAT_POS0="([+]?[0-9]*\.[0-9]+([eE][-+]?[0-9]+)?)"
 
+readonly LIB_REGEX_TYPE_GUID="((\{)?([0-9A-Fa-f]{32}|[0-9A-Fa-f]{8}(-[0-9A-Fa-f]{4}){3}-[0-9A-Fa-f]{12})(\})?)"
 readonly LIB_REGEX_TYPE_HEX="[0-9A-Fa-f]+"
 readonly LIB_REGEX_TYPE_INTEGER="([-+]?(0|[1-9][0-9]*))"
 readonly LIB_REGEX_TYPE_INTEGER_NEG="([-][1-9][0-9]*)"
@@ -376,6 +377,7 @@ lib_regex() {
     --fqdn)               regex="${LIB_REGEX_NET_DNS_FQDN}"              ;;
     --fqdn-or-wildcard)   regex="${LIB_REGEX_NET_DNS_FQDN_OR_WILDCARD}"  ;;
     --fqdn-wildcard)      regex="${LIB_REGEX_NET_DNS_FQDN_WILDCARD}"     ;;
+    --guid)               regex="${LIB_REGEX_TYPE_GUID}"                 ;;
     --hex)                regex="${LIB_REGEX_TYPE_HEX}"                  ;;
     --host)               regex="${LIB_REGEX_NET_HOST}"                  ;;
     --hostname)           regex="${LIB_REGEX_NET_DNS_FQDN_SEG}"          ;;
@@ -413,7 +415,7 @@ lib_regex() {
     --tcpudp|--port)      regex="${LIB_REGEX_NET_TCPUDP_PORT}"           ;;
     --tcpudp-range|--portrange) regex="${LIB_REGEX_NET_TCPUDP_PORT_RANGE}"  ;;
     --uri|--rfc3986)      regex="${LIB_REGEX_RFC3986_URI}"               ;;
-    --uuid|--guid)        regex="${LIB_REGEX_TYPE_UUID}"                 ;;
+    --uuid)               regex="${LIB_REGEX_TYPE_UUID}"                 ;;
     --yesno)              regex="${LIB_REGEX_TYPE_YESNO}"                ;;
     --Yy-${LIB_C_ID_L_DE}) regex="${LIB_REGEX_TYPE_YY_DE}"               ;;
     --Yy-${LIB_C_ID_L_EN}) regex="${LIB_REGEX_TYPE_YY_EN}"               ;;
