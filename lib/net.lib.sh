@@ -221,13 +221,13 @@ lib_net_dns_resolve() {
 
   lib_core_is --cmd "dig" || return
 
-  if lib_core_regex --fqdn "${arg_resolve}"; then
+  if lib_regex --fqdn "${arg_resolve}"; then
     __lib_net_dns_resolve \
       --fqdn "${arg_ipv}" "${arg_resolve}" "${arg_time}" "${arg_tries}"
-  elif lib_core_regex --dns-srv "${arg_resolve}"; then
+  elif lib_regex --dns-srv "${arg_resolve}"; then
     __lib_net_dns_resolve \
       --srv "${arg_ipv}" "${arg_resolve}" "${arg_time}" "${arg_tries}"
-  elif lib_core_regex --hostname "${arg_resolve}"; then
+  elif lib_regex --hostname "${arg_resolve}"; then
     __lib_net_dns_resolve \
       --hostname "${arg_ipv}" "${arg_resolve}" "${arg_time}" "${arg_tries}"
   else
@@ -278,7 +278,7 @@ __lib_net_dns_resolve() {
       #-------------------------------------------------------------------------
       local result
       for result in $(dig "${arg_resolve}" "${record}" ${queryopts}); do
-        lib_core_regex "${arg_type_output}" "${result}" && \
+        lib_regex "${arg_type_output}" "${result}" && \
         list_ip="${list_ip}${result}\n"
       done
       ;;
@@ -459,9 +459,9 @@ lib_net_host_is_up() {
   local arg_wait="${4:-false}"
 
   lib_core_is --cmd "nc"                    && \
-  lib_core_regex --host "${arg_host}"       && \
-  lib_core_regex --port "${arg_port}"       && \
-  lib_core_regex --num-pos "${arg_timeout}" && \
+  lib_regex --host "${arg_host}"            && \
+  lib_regex --port "${arg_port}"            && \
+  lib_regex --num-pos "${arg_timeout}"      && \
   lib_core_is --bool "${arg_wait}"          || \
   return
 
